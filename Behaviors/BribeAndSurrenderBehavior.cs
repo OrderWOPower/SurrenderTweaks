@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
@@ -26,6 +26,7 @@ namespace SurrenderTweaks.Behaviors
                 num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
                 num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
                 BribeAmount = Math.Min(num, conversationParty.LeaderHero.Gold);
+                SetBribeOrSurrender(conversationParty, MobileParty.MainParty);
             }
             else if (defenderSettlement != null)
             {
@@ -44,17 +45,13 @@ namespace SurrenderTweaks.Behaviors
                 BribeAmount = Math.Min(num, defenderSettlement.Town.Gold);
             }
             MBTextManager.SetTextVariable("MONEY", BribeAmount);
-            if (PlayerSiege.PlayerSiegeEvent == null)
-            {
-                SetBribeOrSurrender(conversationParty, MobileParty.MainParty);
-            }
         }
         public void OnTick(float dt)
         {
+            IsBribeFeasible = false;
+            IsSurrenderFeasible = false;
             if (PlayerSiege.PlayerSiegeEvent == null)
             {
-                IsBribeFeasible = false;
-                IsSurrenderFeasible = false;
                 SettlementBribeAndSurrenderBehavior.DefenderSettlement = null;
             }
             else
