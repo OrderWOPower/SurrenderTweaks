@@ -62,13 +62,13 @@ namespace SurrenderTweaks.Behaviors
             }
             else
             {
-                SetBribeOrSurrender(SettlementBribeAndSurrenderBehavior.DefenderSettlement?.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty);
+                SetBribeOrSurrender(SettlementBribeAndSurrenderBehavior.DefenderSettlement?.MilitiaPartyComponent.MobileParty, MobileParty.MainParty);
             }
         }
         // Set the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
         public void SetBribeOrSurrender(MobileParty defender, MobileParty attacker)
         {
-            if (defender != null && attacker != null)
+            if (defender != null)
             {
                 float num = 0.0f;
                 float num2 = 0.0f;
