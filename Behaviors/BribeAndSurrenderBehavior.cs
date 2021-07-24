@@ -18,11 +18,11 @@ namespace SurrenderTweaks.Behaviors
         // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the properity of the settlement.
         private void OnSetupPreConversation()
         {
-            int num = 0;
             MobileParty conversationParty = MobileParty.ConversationParty;
             Settlement defenderSettlement = SettlementBribeAndSurrenderBehavior.DefenderSettlement;
             if (conversationParty != null)
             {
+                int num = 0;
                 if (!conversationParty.IsMilitia)
                 {
                     if (conversationParty.LeaderHero != null)
@@ -49,8 +49,8 @@ namespace SurrenderTweaks.Behaviors
                     num += (int)defenderSettlement.Prosperity * 3;
                     BribeAmount = Math.Min(num, defenderSettlement.Town.Gold);
                 }
+                MBTextManager.SetTextVariable("MONEY", BribeAmount);
             }
-            MBTextManager.SetTextVariable("MONEY", BribeAmount);
         }
         public void OnTick(float dt)
         {
@@ -68,12 +68,12 @@ namespace SurrenderTweaks.Behaviors
         // Set the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
         public void SetBribeOrSurrender(MobileParty defender, MobileParty attacker)
         {
-            float num = 0.0f;
-            float num2 = 0.0f;
-            float num3 = 0.0f;
-            float num4 = 0.0f;
             if (defender != null && attacker != null)
             {
+                float num = 0.0f;
+                float num2 = 0.0f;
+                float num3 = 0.0f;
+                float num4 = 0.0f;
                 if (defender.IsBandit)
                 {
                     num = 0.06f;
