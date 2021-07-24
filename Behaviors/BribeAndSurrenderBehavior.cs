@@ -21,28 +21,34 @@ namespace SurrenderTweaks.Behaviors
             int num = 0;
             MobileParty conversationParty = MobileParty.ConversationParty;
             Settlement defenderSettlement = SettlementBribeAndSurrenderBehavior.DefenderSettlement;
-            if (conversationParty?.LeaderHero != null)
+            if (conversationParty != null)
             {
-                num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
-                num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
-                BribeAmount = Math.Min(num, conversationParty.LeaderHero.Gold);
-                SetBribeOrSurrender(conversationParty, MobileParty.MainParty);
-            }
-            else if (defenderSettlement != null)
-            {
-                foreach (PartyBase party in defenderSettlement.SiegeParties)
+                if (!conversationParty.IsMilitia)
                 {
-                    if (party.LeaderHero != null)
+                    if (conversationParty.LeaderHero != null)
                     {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(party.LeaderHero));
+                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
+                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
+                        BribeAmount = Math.Min(num, conversationParty.LeaderHero.Gold);
                     }
-                    if (party.MobileParty != null)
-                    {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(party.MobileParty));
-                    }
+                    SetBribeOrSurrender(conversationParty, MobileParty.MainParty);
                 }
-                num += (int)defenderSettlement.Prosperity * 3;
-                BribeAmount = Math.Min(num, defenderSettlement.Town.Gold);
+                else
+                {
+                    foreach (PartyBase party in defenderSettlement.SiegeParties)
+                    {
+                        if (party.LeaderHero != null)
+                        {
+                            num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(party.LeaderHero));
+                        }
+                        if (party.MobileParty != null)
+                        {
+                            num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(party.MobileParty));
+                        }
+                    }
+                    num += (int)defenderSettlement.Prosperity * 3;
+                    BribeAmount = Math.Min(num, defenderSettlement.Town.Gold);
+                }
             }
             MBTextManager.SetTextVariable("MONEY", BribeAmount);
         }
