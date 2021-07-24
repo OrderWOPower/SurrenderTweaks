@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -57,10 +57,6 @@ namespace SurrenderTweaks.Behaviors
                 SettlementBribeCooldown.Remove(settlement);
                 _settlementStarvationPenalty.Remove(settlement);
                 _settlementHasOfferedBribe.Remove(settlement);
-            }
-            if (settlement == DefenderSettlement)
-            {
-                DefenderSettlement = null;
             }
         }
         // If a settlement has a bribe cooldown, decrease the bribe cooldown by 1 day. If a settlement's bribe cooldown is 0 days, remove its bribe cooldown.
