@@ -89,7 +89,7 @@ namespace SurrenderTweaks.Behaviors
         // If a settlement has no food, increase its starvation penalty. If the settlement is willing to offer a bribe or surrender, make them request a parley with the player.
         public void OnHourlyTick()
         {
-            if (DefenderSettlement != null && MapEvent.PlayerMapEvent == null)
+            if (DefenderSettlement != null)
             {
                 _settlementFood = Math.Ceiling(DefenderSettlement.Town.FoodStocks / -DefenderSettlement.Town.FoodChange);
                 if (_settlementFood > 0)
