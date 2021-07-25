@@ -1,6 +1,5 @@
-﻿using Bannerlord.UIExtenderEx.Attributes;
+using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
-using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
@@ -16,7 +15,7 @@ namespace SurrenderTweaks
         public static void SetSurrenderChance()
         {
             SurrenderChance = null;
-            if (MapEvent.PlayerMapEvent == null || (MapEvent.PlayerMapEvent != null && Mission.Current == null))
+            if (Mission.Current == null)
             {
                 if (BribeAndSurrenderBehavior.IsBribeFeasible)
                 {
