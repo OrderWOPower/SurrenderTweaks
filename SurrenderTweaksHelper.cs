@@ -40,7 +40,7 @@ namespace SurrenderTweaks
             int num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, num)) ? 33 : 67;
             if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
             {
-                num3 = MathF.Round(num * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus * 0.01f));
+                num3 = MathF.Round(num3 * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus * 0.01f));
             }
             return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, num2));
         }
