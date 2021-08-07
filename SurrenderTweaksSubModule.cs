@@ -1,15 +1,19 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using Bannerlord.UIExtenderEx;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.MountAndBlade;
 using SurrenderTweaks.Behaviors;
 
 namespace SurrenderTweaks
 {
     // This mod enables surrender for lord parties and settlements. It also displays an enemy party or settlement's chance of surrender.
+    [HarmonyPatch(typeof(PowerLevelComparer), MethodType.Constructor, new Type[] { typeof(double), typeof(double) })]
     public class SurrenderTweaksSubModule : MBSubModuleBase
     {
+        public static void Postfix(PowerLevelComparer __instance) => _powerLevelComparer = __instance;
         protected override void OnSubModuleLoad()
         {
             new Harmony("mod.bannerlord.surrendertweaks").PatchAll();
@@ -26,6 +30,16 @@ namespace SurrenderTweaks
                 campaignStarter.AddBehavior(new SettlementBribeAndSurrenderBehavior());
             }
         }
-        protected override void OnApplicationTick(float dt) => SurrenderTweaksMixin.SetSurrenderChance();
+        protected override void OnApplicationTick(float dt)
+        {
+            if (_powerLevelComparer != null)
+            {
+                _surrenderTweaksMixin = new SurrenderTweaksMixin(_powerLevelComparer);
+                _powerLevelComparer = null;
+            }
+            _surrenderTweaksMixin?.SetSurrenderChance();
+        }
+        private static PowerLevelComparer _powerLevelComparer;
+        private SurrenderTweaksMixin _surrenderTweaksMixin;
     }
 }

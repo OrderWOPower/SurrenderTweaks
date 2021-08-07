@@ -32,12 +32,12 @@ namespace SurrenderTweaks.Behaviors
             }, 100, null);
             starter.AddDialogLine("", "player_wants_prisoners", "close_window", "I would rather fight than be taken prisoner.[if:idle_angry][ib:warrior]", null, null, 100, null);
         }
-        private static bool conversation_lord_bribe_on_condition() => BribeAndSurrenderBehavior.IsBribeFeasible;
-        private static bool conversation_lord_surrender_on_condition() => BribeAndSurrenderBehavior.IsSurrenderFeasible;
+        private static bool conversation_lord_bribe_on_condition() => SurrenderTweaksHelper.IsBribeFeasible;
+        private static bool conversation_lord_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible;
         // If the player accepts a lord's bribe, transfer the bribe amount from the lord to the player and disband the lord's party.
         private static void conversation_lord_bribe_on_consequence(MobileParty defender)
         {
-            GiveGoldAction.ApplyBetweenCharacters(defender.LeaderHero, Hero.MainHero, BribeAndSurrenderBehavior.BribeAmount, false);
+            GiveGoldAction.ApplyBetweenCharacters(defender.LeaderHero, Hero.MainHero, SurrenderTweaksHelper.BribeAmount(), false);
             DisbandPartyAction.ApplyDisband(defender);
             PlayerEncounter.LeaveEncounter = true;
         }

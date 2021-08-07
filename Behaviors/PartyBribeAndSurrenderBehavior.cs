@@ -8,7 +8,7 @@ namespace SurrenderTweaks.Behaviors
 {
     public class PartyBribeAndSurrenderBehavior
     {
-        // Replace the value of the chance of bandits, caravans and villagers offering a bribe to the value calculated in this mod.
+        // Replace the value of the chance of bandits, caravans and villagers offering a bribe with the value calculated in this mod.
         [HarmonyPatch]
         public class PartyBribeBehavior
         {
@@ -18,9 +18,9 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(CaravansCampaignBehavior), "IsBribeFeasible");
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsBribeFeasible");
             }
-            private static void Postfix(ref bool __result) => __result = BribeAndSurrenderBehavior.IsBribeFeasible;
+            private static void Postfix(ref bool __result) => __result = SurrenderTweaksHelper.IsBribeFeasible;
         }
-        // Replace the value of the chance of bandits, caravans and villagers offering a surrender to the value calculated in this mod.
+        // Replace the value of the chance of bandits, caravans and villagers offering a surrender with the value calculated in this mod.
         [HarmonyPatch]
         public class PartySurrenderBehavior
         {
@@ -30,7 +30,7 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(CaravansCampaignBehavior), "IsSurrenderFeasible");
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsSurrenderFeasible");
             }
-            private static void Postfix(ref bool __result) => __result = BribeAndSurrenderBehavior.IsSurrenderFeasible;
+            private static void Postfix(ref bool __result) => __result = SurrenderTweaksHelper.IsSurrenderFeasible;
         }
     }
 }

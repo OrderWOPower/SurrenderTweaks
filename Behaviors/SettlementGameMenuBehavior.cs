@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using HarmonyLib;
+﻿using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
@@ -13,18 +12,19 @@ namespace SurrenderTweaks.Behaviors
         // If a settlement has a bribe cooldown, disable the option for besieging the settlement. Display the bribe cooldown's number of days in the option's tooltip.
         public static void Postfix(MenuCallbackArgs args)
         {
-            Dictionary<Settlement, int> bribeCooldown = SettlementBribeAndSurrenderBehavior.SettlementBribeCooldown;
-            Settlement settlement = Settlement.CurrentSettlement;
-            if (bribeCooldown.ContainsKey(settlement))
+            for (int i = 0; i < SurrenderTweaksHelper.TruceSettlements?.Count; i++)
             {
-                MBTextManager.SetTextVariable("BRIBE_COOLDOWN", bribeCooldown[settlement]);
-                MBTextManager.SetTextVariable("PLURAL", (bribeCooldown[settlement] > 1) ? 1 : 0);
-                args.Tooltip = new TextObject("You cannot attack this settlement for {BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
-                args.IsEnabled = false;
-            }
-            else
-            {
-                args.IsEnabled = true;
+                if (SurrenderTweaksHelper.TruceSettlements[i] == Settlement.CurrentSettlement)
+                {
+                    MBTextManager.SetTextVariable("BRIBE_COOLDOWN", SurrenderTweaksHelper.BribeCooldowns[i]);
+                    MBTextManager.SetTextVariable("PLURAL", (SurrenderTweaksHelper.BribeCooldowns[i] > 1) ? 1 : 0);
+                    args.Tooltip = new TextObject("You cannot attack this settlement for {BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                    args.IsEnabled = false;
+                }
+                else
+                {
+                    args.IsEnabled = true;
+                }
             }
         }
     }

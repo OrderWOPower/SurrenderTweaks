@@ -81,6 +81,7 @@
     <Compile Include="Behaviors\LordBribeAndSurrenderBehavior.cs" />
     <Compile Include="Behaviors\SettlementGameMenuBehavior.cs" />
     <Compile Include="Behaviors\SettlementBribeAndSurrenderBehavior.cs" />
+    <Compile Include="SurrenderTweaksHelper.cs" />
     <Compile Include="SurrenderTweaksMixin.cs" />
     <Compile Include="SurrenderTweaksSubModule.cs" />
     <Compile Include="SurrenderTweaksPrefab.cs" />

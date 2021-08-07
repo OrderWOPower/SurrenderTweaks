@@ -1,34 +1,33 @@
-using Bannerlord.UIExtenderEx.Attributes;
+﻿using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
-using SurrenderTweaks.Behaviors;
 
 namespace SurrenderTweaks
 {
     [ViewModelMixin]
     public class SurrenderTweaksMixin : BaseViewModelMixin<PowerLevelComparer>
     {
-        public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) => _viewModel = powerLevelComparer;
+        public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) { }
         // Set the "Chance of Surrender" text depending on whether a bribe or a surrender is feasible.
-        public static void SetSurrenderChance()
+        public void SetSurrenderChance()
         {
             SurrenderChance = null;
             if (Mission.Current == null)
             {
-                if (BribeAndSurrenderBehavior.IsBribeFeasible)
+                if (SurrenderTweaksHelper.IsBribeFeasible)
                 {
                     SurrenderChance = "Chance of Surrender: High";
                 }
-                if (BribeAndSurrenderBehavior.IsSurrenderFeasible)
+                if (SurrenderTweaksHelper.IsSurrenderFeasible)
                 {
                     SurrenderChance = "Chance of Surrender: Very High";
                 }
             }
         }
         [DataSourceProperty]
-        public static string SurrenderChance
+        public string SurrenderChance
         {
             get
             {
@@ -39,11 +38,10 @@ namespace SurrenderTweaks
                 if (value != _surrenderChance)
                 {
                     _surrenderChance = value;
-                    _viewModel?.OnPropertyChangedWithValue(value, "SurrenderChance");
+                    ViewModel?.OnPropertyChangedWithValue(value, "SurrenderChance");
                 }
             }
         }
-        private static ViewModel _viewModel;
-        private static string _surrenderChance;
+        private string _surrenderChance;
     }
 }
