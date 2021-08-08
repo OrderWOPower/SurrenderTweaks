@@ -60,8 +60,9 @@ namespace SurrenderTweaks.Behaviors
                 _hasOfferedBribe.Remove(settlement);
             }
         }
-        // If a settlement has a bribe cooldown, decrease the bribe cooldown by 1 day. If a settlement's bribe cooldown is 0 days, remove its bribe cooldown.
         // If a settlement is no longer under siege, remove its starvation penalty.
+        // If a settlement has a bribe cooldown, decrease the bribe cooldown by 1 day.
+        // If a settlement's bribe cooldown is 0 days, remove its bribe cooldown.
         public void OnDailyTick()
         {
             foreach (Settlement settlement in _starvationPenalty.Keys.ToList())
