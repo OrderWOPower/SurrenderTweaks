@@ -10,11 +10,16 @@ namespace SurrenderTweaks
     {
         public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker)
         {
-            IsBribeFeasible = IsBribeOrSurrenderFeasible(defender, attacker, false);
-            IsSurrenderFeasible = IsBribeOrSurrenderFeasible(defender, attacker, true);
-            if (defender.LeaderHero?.GetTraitLevel(DefaultTraits.Valor) < 0)
+            IsBribeFeasible = false;
+            IsSurrenderFeasible = false;
+            if (defender != null && attacker != null)
             {
-                IsSurrenderFeasible = IsBribeFeasible;
+                IsBribeFeasible = IsBribeOrSurrenderFeasible(defender, attacker, false);
+                IsSurrenderFeasible = IsBribeOrSurrenderFeasible(defender, attacker, true);
+                if (defender.LeaderHero?.GetTraitLevel(DefaultTraits.Valor) < 0)
+                {
+                    IsSurrenderFeasible = IsBribeFeasible;
+                }
             }
         }
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
@@ -49,14 +54,14 @@ namespace SurrenderTweaks
         {
             double num = defender.Party.TotalStrength;
             double num2 = attacker.Party.TotalStrength;
-            foreach (PartyBase party in DefenderSettlement.SiegeParties)
+            foreach (PartyBase party in defender.CurrentSettlement.SiegeParties)
             {
                 if (party != defender.Party)
                 {
                     num += party.TotalStrength;
                 }
             }
-            foreach (PartyBase party in DefenderSettlement.SiegeEvent.BesiegerCamp.SiegeParties)
+            foreach (PartyBase party in attacker.BesiegerCamp.SiegeParties)
             {
                 if (party != attacker.Party)
                 {
@@ -68,53 +73,70 @@ namespace SurrenderTweaks
         }
         // For lord parties, calculate the bribe amount based on the total barter value of the lord and the troops in the party.
         // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the properity of the settlement.
-        public static int BribeAmount()
+        public static void BribeAmount(MobileParty conversationParty, Settlement defenderSettlement, out int gold)
         {
-            MobileParty conversationParty = MobileParty.ConversationParty;
-            Settlement besiegedSettlement = PlayerSiege.BesiegedSettlement;
             int num = 0;
+            int num2 = 0;
             if (!conversationParty.IsMilitia)
             {
                 if (conversationParty.LeaderHero != null)
                 {
                     num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
                     num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
-                    return Math.Min(num, conversationParty.LeaderHero.Gold);
+                    num2 = Math.Min(num, conversationParty.LeaderHero.Gold);
                 }
             }
             else
             {
-                foreach (PartyBase party in besiegedSettlement.SiegeParties)
+                foreach (PartyBase defenderParty in defenderSettlement.SiegeParties)
                 {
-                    if (party.LeaderHero != null)
+                    if (defenderParty.LeaderHero != null)
                     {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(party.LeaderHero));
+                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(defenderParty.LeaderHero));
                     }
-                    if (party.MobileParty != null)
+                    if (defenderParty.MobileParty != null)
                     {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(party.MobileParty));
+                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
                     }
                 }
-                num += (int)besiegedSettlement.Prosperity * 3;
-                return Math.Min(num, besiegedSettlement.Town.Gold);
+                num += (int)defenderSettlement.Prosperity * 3;
+                num2 = Math.Min(num, defenderSettlement.Town.Gold);
             }
-            return num;
+            gold = num2;
         }
-        public static void GetStarvationPenalty(int num) => StarvationPenalty = num;
         // If a settlement has no food, increase its starvation penalty.
-        public static void SetStarvationPenalty(int num)
+        public static int GetStarvationPenalty(Settlement settlement)
         {
+            for (int i = 0; i < StarvationPenalties.Item1.Count; i++)
+            {
+                if (StarvationPenalties.Item1[i] == settlement)
+                {
+                    StarvationPenalty = StarvationPenalties.Item2[i];
+                }
+            }
             if (Food > 0)
             {
                 StarvationPenalty = 0;
             }
             else
             {
-                StarvationPenalty = num + 8;
+                StarvationPenalty += 8;
             }
+            return StarvationPenalty;
         }
-        public static void GetTruceSettlements(List<Settlement> settlements) => TruceSettlements = settlements;
-        public static void GetBribeCooldowns(List<int> nums) => BribeCooldowns = nums;
+        public static int GetBribeCooldown(Settlement settlement)
+        {
+            for (int i = 0; i < BribeCooldowns.Item1.Count; i++)
+            {
+                if (BribeCooldowns.Item1[i] == settlement)
+                {
+                    return BribeCooldowns.Item2[i];
+                }
+            }
+            return 0;
+        }
+        public static void SetStarvationPenalties(Tuple<List<Settlement>, List<int>> tuple) => StarvationPenalties = tuple;
+        public static void SetBribeCooldowns(Tuple<List<Settlement>, List<int>> tuple) => BribeCooldowns = tuple;
         public static bool IsBribeFeasible { get; set; }
         public static bool IsSurrenderFeasible { get; set; }
         public static Settlement DefenderSettlement
@@ -130,7 +152,7 @@ namespace SurrenderTweaks
         }
         public static double Food => Math.Ceiling(DefenderSettlement.Town.FoodStocks / -DefenderSettlement.Town.FoodChange);
         public static int StarvationPenalty { get; set; }
-        public static List<Settlement> TruceSettlements { get; set; }
-        public static List<int> BribeCooldowns { get; set; }
+        public static Tuple<List<Settlement>, List<int>> StarvationPenalties { get; set; }
+        public static Tuple<List<Settlement>, List<int>> BribeCooldowns { get; set; }
     }
 }

@@ -12,19 +12,17 @@ namespace SurrenderTweaks.Behaviors
         // If a settlement has a bribe cooldown, disable the option for besieging the settlement. Display the bribe cooldown's number of days in the option's tooltip.
         public static void Postfix(MenuCallbackArgs args)
         {
-            for (int i = 0; i < SurrenderTweaksHelper.TruceSettlements?.Count; i++)
+            int num = SurrenderTweaksHelper.GetBribeCooldown(Settlement.CurrentSettlement);
+            if (num > 0)
             {
-                if (SurrenderTweaksHelper.TruceSettlements[i] == Settlement.CurrentSettlement)
-                {
-                    MBTextManager.SetTextVariable("BRIBE_COOLDOWN", SurrenderTweaksHelper.BribeCooldowns[i]);
-                    MBTextManager.SetTextVariable("PLURAL", (SurrenderTweaksHelper.BribeCooldowns[i] > 1) ? 1 : 0);
-                    args.Tooltip = new TextObject("You cannot attack this settlement for {BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
-                    args.IsEnabled = false;
-                }
-                else
-                {
-                    args.IsEnabled = true;
-                }
+                MBTextManager.SetTextVariable("BRIBE_COOLDOWN", num);
+                MBTextManager.SetTextVariable("PLURAL", (num > 1) ? 1 : 0);
+                args.Tooltip = new TextObject("You cannot attack this settlement for {BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                args.IsEnabled = false;
+            }
+            else
+            {
+                args.IsEnabled = true;
             }
         }
     }
