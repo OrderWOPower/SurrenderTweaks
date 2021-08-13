@@ -77,30 +77,33 @@ namespace SurrenderTweaks
         {
             int num = 0;
             int num2 = 0;
-            if (!conversationParty.IsMilitia)
+            if (conversationParty != null)
             {
-                if (conversationParty.LeaderHero != null)
+                if (!conversationParty.IsMilitia)
                 {
-                    num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
-                    num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
-                    num2 = Math.Min(num, conversationParty.LeaderHero.Gold);
-                }
-            }
-            else
-            {
-                foreach (PartyBase defenderParty in defenderSettlement.SiegeParties)
-                {
-                    if (defenderParty.LeaderHero != null)
+                    if (conversationParty.LeaderHero != null)
                     {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(defenderParty.LeaderHero));
-                    }
-                    if (defenderParty.MobileParty != null)
-                    {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
+                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
+                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
+                        num2 = Math.Min(num, conversationParty.LeaderHero.Gold);
                     }
                 }
-                num += (int)defenderSettlement.Prosperity * 3;
-                num2 = Math.Min(num, defenderSettlement.Town.Gold);
+                else
+                {
+                    foreach (PartyBase defenderParty in defenderSettlement.SiegeParties)
+                    {
+                        if (defenderParty.LeaderHero != null)
+                        {
+                            num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(defenderParty.LeaderHero));
+                        }
+                        if (defenderParty.MobileParty != null)
+                        {
+                            num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
+                        }
+                    }
+                    num += (int)defenderSettlement.Prosperity * 3;
+                    num2 = Math.Min(num, defenderSettlement.Town.Gold);
+                }
             }
             gold = num2;
         }

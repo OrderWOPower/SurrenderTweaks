@@ -36,7 +36,7 @@ namespace SurrenderTweaks.Behaviors
             }
         }
         // Add a starvation penalty to the besieged settlement.
-        private void OnSiegeStarted(SiegeEvent siegeEvent)
+        public void OnSiegeStarted(SiegeEvent siegeEvent)
         {
             _defenderSettlement = SurrenderTweaksHelper.DefenderSettlement;
             if (_defenderSettlement != null)
@@ -124,9 +124,9 @@ namespace SurrenderTweaks.Behaviors
         {
             SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement, out int num);
             MBTextManager.SetTextVariable("MONEY", num);
-            return SurrenderTweaksHelper.IsBribeFeasible && !SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty.IsMilitia;
+            return SurrenderTweaksHelper.IsBribeFeasible && !SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
         }
-        private bool conversation_settlement_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty.IsMilitia;
+        private bool conversation_settlement_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
         // If the player accepts a settlement's bribe, transfer the bribe amount from the settlement to the player and break the siege. Add a bribe cooldown to the settlement and set it to 7 days.
         private void conversation_settlement_bribe_on_consequence()
         {

@@ -11,7 +11,7 @@ namespace SurrenderTweaks.Behaviors
             CampaignEvents.TickEvent.AddNonSerializedListener(this, new Action<float>(OnTick));
         }
         public override void SyncData(IDataStore dataStore) { }
-        private void OnSetupPreConversation()
+        public void OnSetupPreConversation()
         {
             if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
             {
