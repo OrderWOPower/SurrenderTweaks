@@ -15,14 +15,14 @@ namespace SurrenderTweaks.Behaviors
         {
             if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
             {
-                SurrenderTweaksHelper.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
+                SurrenderTweaksHelper.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty, 0, 0);
             }
         }
         public void OnTick(float dt)
         {
             if (SurrenderTweaksHelper.DefenderSettlement == null)
             {
-                SurrenderTweaksHelper.SetBribeOrSurrender(null, null);
+                SurrenderTweaksHelper.SetBribeOrSurrender(null, null, 0, 0);
             }
         }
     }

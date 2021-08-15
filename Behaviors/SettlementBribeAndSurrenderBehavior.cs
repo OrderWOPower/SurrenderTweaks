@@ -88,13 +88,22 @@ namespace SurrenderTweaks.Behaviors
                 }
             }
         }
+        // If a settlement has no food, increase its starvation penalty.
         // If the settlement is willing to offer a bribe or surrender, make them request a parley with the player.
         public void OnHourlyTick()
         {
             if (_defenderSettlement != null)
             {
-                _starvationPenalty[_defenderSettlement] = SurrenderTweaksHelper.GetStarvationPenalty(_defenderSettlement);
-                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent.MobileParty, MobileParty.MainParty);
+                _food = Math.Ceiling(_defenderSettlement.Town.FoodStocks / -_defenderSettlement.Town.FoodChange);
+                if (_food > 0)
+                {
+                    _starvationPenalty[_defenderSettlement] = 0;
+                }
+                else
+                {
+                    _starvationPenalty[_defenderSettlement] += 8;
+                }
+                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent.MobileParty, MobileParty.MainParty, _food, _starvationPenalty[_defenderSettlement]);
                 if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[_defenderSettlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[_defenderSettlement] == 1))
                 {
                     RequestParley();
@@ -105,8 +114,7 @@ namespace SurrenderTweaks.Behaviors
         public void OnTick(float dt)
         {
             _defenderSettlement = SurrenderTweaksHelper.DefenderSettlement;
-            SurrenderTweaksHelper.SetStarvationPenalties(new Tuple<List<Settlement>, List<int>>(_starvationPenalty.Keys.ToList(), _starvationPenalty.Values.ToList()));
-            SurrenderTweaksHelper.SetBribeCooldowns(new Tuple<List<Settlement>, List<int>>(_bribeCooldown.Keys.ToList(), _bribeCooldown.Values.ToList()));
+            SurrenderTweaksHelper.SetBribeCooldown(_bribeCooldown);
         }
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // Add dialog lines for a settlement offering a bribe or surrender.
@@ -181,5 +189,6 @@ namespace SurrenderTweaks.Behaviors
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _hasOfferedBribe = new Dictionary<Settlement, int>();
+        private double _food;
     }
 }
