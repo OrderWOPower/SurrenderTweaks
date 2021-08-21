@@ -110,17 +110,6 @@ namespace SurrenderTweaks
         public static void SetBribeCooldown(Dictionary<Settlement, int> bribeCooldown) => BribeCooldown = bribeCooldown;
         public static bool IsBribeFeasible { get; set; }
         public static bool IsSurrenderFeasible { get; set; }
-        public static Settlement DefenderSettlement
-        {
-            get
-            {
-                if (PlayerSiege.PlayerSiegeEvent?.BesiegerCamp.BesiegerParty == MobileParty.MainParty)
-                {
-                    return PlayerSiege.BesiegedSettlement;
-                }
-                return null;
-            }
-        }
         public static Dictionary<Settlement, int> BribeCooldown { get; set; }
     }
 }

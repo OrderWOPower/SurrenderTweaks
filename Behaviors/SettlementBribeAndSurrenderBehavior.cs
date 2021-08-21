@@ -38,9 +38,9 @@ namespace SurrenderTweaks.Behaviors
         // Add a starvation penalty to the besieged settlement.
         public void OnSiegeStarted(SiegeEvent siegeEvent)
         {
-            _defenderSettlement = SurrenderTweaksHelper.DefenderSettlement;
-            if (_defenderSettlement != null)
+            if (siegeEvent.BesiegerCamp.BesiegerParty.IsMainParty)
             {
+                _defenderSettlement = siegeEvent.BesiegedSettlement;
                 if (!_starvationPenalty.ContainsKey(_defenderSettlement))
                 {
                     _starvationPenalty.Add(_defenderSettlement, 0);
@@ -113,7 +113,10 @@ namespace SurrenderTweaks.Behaviors
         }
         public void OnTick(float dt)
         {
-            _defenderSettlement = SurrenderTweaksHelper.DefenderSettlement;
+            if (PlayerSiege.PlayerSiegeEvent == null)
+            {
+                _defenderSettlement = null;
+            }
             SurrenderTweaksHelper.SetBribeCooldown(_bribeCooldown);
         }
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);

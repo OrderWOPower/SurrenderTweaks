@@ -20,7 +20,7 @@ namespace SurrenderTweaks.Behaviors
         }
         public void OnTick(float dt)
         {
-            if (SurrenderTweaksHelper.DefenderSettlement == null)
+            if (PlayerSiege.PlayerSiegeEvent == null)
             {
                 SurrenderTweaksHelper.SetBribeOrSurrender(null, null, 0, 0);
             }
