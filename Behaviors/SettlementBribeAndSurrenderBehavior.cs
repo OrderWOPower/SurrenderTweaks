@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -103,7 +103,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     _starvationPenalty[_defenderSettlement] += 8;
                 }
-                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent.MobileParty, MobileParty.MainParty, _food, _starvationPenalty[_defenderSettlement]);
+                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, _food, _starvationPenalty[_defenderSettlement]);
                 if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[_defenderSettlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[_defenderSettlement] == 1))
                 {
                     RequestParley();
