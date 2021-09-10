@@ -11,7 +11,7 @@ namespace SurrenderTweaks.Behaviors
     public class SettlementGameMenuBehavior
     {
         // If a settlement has a bribe cooldown, disable the option for besieging the settlement. Display the bribe cooldown's number of days in the option's tooltip.
-        public static void Postfix(MenuCallbackArgs args)
+        private static void Postfix(MenuCallbackArgs args)
         {
             Dictionary<Settlement, int> bribeCooldown = SurrenderTweaksHelper.BribeCooldown;
             Settlement settlement = Settlement.CurrentSettlement;

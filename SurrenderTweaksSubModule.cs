@@ -27,6 +27,7 @@ namespace SurrenderTweaks
             {
                 CampaignGameStarter campaignStarter = (CampaignGameStarter)gameStarter;
                 campaignStarter.AddBehavior(new BribeAndSurrenderBehavior());
+                campaignStarter.AddBehavior(new LordBribeAndSurrenderBehavior());
                 campaignStarter.AddBehavior(new SettlementBribeAndSurrenderBehavior());
             }
         }
