@@ -31,7 +31,7 @@ namespace SurrenderTweaks.Behaviors
         }
         private bool conversation_lord_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible;
         // If the player accepts a lord's bribe, transfer the bribe amount from the lord to the player and disband the lord's party.
-        private static void conversation_lord_bribe_on_consequence()
+        private void conversation_lord_bribe_on_consequence()
         {
             SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, null, out int num);
             GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, num, false);
