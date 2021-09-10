@@ -8,7 +8,7 @@ namespace SurrenderTweaks
 {
     public static class SurrenderTweaksHelper
     {
-        public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, double food, int starvationPenalty)
+        public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, double food = 0, int starvationPenalty = 0)
         {
             IsBribeFeasible = false;
             IsSurrenderFeasible = false;
