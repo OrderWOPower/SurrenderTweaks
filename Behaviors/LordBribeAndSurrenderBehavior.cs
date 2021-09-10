@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -6,7 +6,6 @@ using TaleWorlds.Localization;
 
 namespace SurrenderTweaks.Behaviors
 {
-    //[HarmonyPatch(typeof(LordConversationsCampaignBehavior), "AddHeroGeneralConversations")]
     public class LordBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
         public override void RegisterEvents() => CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
