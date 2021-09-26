@@ -27,7 +27,7 @@ namespace SurrenderTweaks.Behaviors
             {
                 dataStore.SyncData("_defenderSettlement", ref _defenderSettlement);
                 dataStore.SyncData("_starvationPenalty", ref _starvationPenalty);
-                dataStore.SyncData("_bribeCooldown", ref _bribeCooldown);
+                dataStore.SyncData("_settlementBribeCooldown", ref _bribeCooldown);
                 dataStore.SyncData("_hasOfferedBribe", ref _hasOfferedBribe);
             }
             catch (Exception ex)
@@ -117,7 +117,7 @@ namespace SurrenderTweaks.Behaviors
             {
                 _defenderSettlement = null;
             }
-            SurrenderTweaksHelper.SetBribeCooldown(_bribeCooldown);
+            SurrenderTweaksHelper.SetSettlementBribeCooldown(_bribeCooldown);
         }
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // Add dialog lines for a settlement offering a bribe or surrender.
@@ -138,12 +138,12 @@ namespace SurrenderTweaks.Behaviors
             return SurrenderTweaksHelper.IsBribeFeasible && !SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
         }
         private bool conversation_settlement_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
-        // If the player accepts a settlement's bribe, transfer the bribe amount from the settlement to the player and break the siege. Add a bribe cooldown to the settlement and set it to 7 days.
+        // If the player accepts a settlement's bribe, transfer the bribe amount from the settlement to the player and break the siege. Add a bribe cooldown to the settlement and set it to 10 days.
         private void conversation_settlement_bribe_on_consequence()
         {
             SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement, out int num);
             GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, num, false);
-            _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, 7);
+            _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, 10);
             typeof(SiegeEventCampaignBehavior).GetMethod("LeaveSiege", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
         }
         // If the player accepts a settlement's surrender, capture the lords, capture all the troops in the settlement and capture all their trade items which do not belong to the settlement.
@@ -185,7 +185,7 @@ namespace SurrenderTweaks.Behaviors
             PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerSiege.BesiegedSettlement.Party.Name, troopRoster.TotalManCount, null);
         }
         // When the settlement requests a parley with the player, display a popup message.
-        public void RequestParley() => InformationManager.ShowInquiry(new InquiryData("Defenders request to parley", "The defenders sound a horn and the gates open. A messenger rides out towards your camp and requests to parley.", true, false, new TextObject("OK", null).ToString(), "", new Action(AcceptParley), null, ""), true);
+        public void RequestParley() => InformationManager.ShowInquiry(new InquiryData("Defenders request to parley", "The defenders sound a horn and open the gates. A messenger rides out towards your camp and requests to parley.", true, false, new TextObject("OK", null).ToString(), "", new Action(AcceptParley), null, ""), true);
         // When the player accepts a parley, start a conversation with the settlement defenders.
         public void AcceptParley() => CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.Leader, _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         private Settlement _defenderSettlement;
