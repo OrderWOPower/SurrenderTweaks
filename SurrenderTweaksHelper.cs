@@ -8,14 +8,14 @@ namespace SurrenderTweaks
 {
     public static class SurrenderTweaksHelper
     {
-        public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, double food = 0, int starvationPenalty = 0)
+        public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, double daysToStarvation = 0, int starvationPenalty = 0)
         {
             IsBribeFeasible = false;
             IsSurrenderFeasible = false;
-            if (defender != null && attacker != null)
+            if (defender != null && attacker != null && daysToStarvation >= 0)
             {
-                IsBribeFeasible = IsBribeOrSurrenderFeasible(defender, attacker, food, starvationPenalty, false);
-                IsSurrenderFeasible = IsBribeOrSurrenderFeasible(defender, attacker, food, starvationPenalty, true);
+                IsBribeFeasible = IsBribeOrSurrenderFeasible(defender, attacker, daysToStarvation, starvationPenalty, false);
+                IsSurrenderFeasible = IsBribeOrSurrenderFeasible(defender, attacker, daysToStarvation, starvationPenalty, true);
                 if (defender.LeaderHero?.GetTraitLevel(DefaultTraits.Valor) < 0)
                 {
                     IsSurrenderFeasible = IsBribeFeasible;
@@ -23,7 +23,7 @@ namespace SurrenderTweaks
             }
         }
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
-        private static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, double food, int starvationPenalty, bool shouldSurrender)
+        private static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, double daysToStarvation, int starvationPenalty, bool shouldSurrender)
         {
             float num = 0f;
             float num2 = 0f;
@@ -42,15 +42,15 @@ namespace SurrenderTweaks
                 num = !shouldSurrender ? 0.2f : 0.05f;
                 num2 = !shouldSurrender ? 0.4f : 0.1f;
             }
-            int num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, food, starvationPenalty, num)) ? 33 : 67;
+            int num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysToStarvation, starvationPenalty, num)) ? 33 : 67;
             if (Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
             {
                 num3 = MathF.Round(num3 * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus * 0.01f));
             }
-            return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, food, starvationPenalty, num2));
+            return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysToStarvation, starvationPenalty, num2));
         }
         // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
-        public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, double food, int starvationPenalty, float acceptablePowerRatio = 0.1f)
+        public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, double daysToStarvation, int starvationPenalty, float acceptablePowerRatio = 0.1f)
         {
             double num = defender.Party.TotalStrength;
             double num2 = attacker.Party.TotalStrength;
@@ -68,7 +68,7 @@ namespace SurrenderTweaks
                     num2 += party.TotalStrength;
                 }
             }
-            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * (defender.Party.Random.GetValue(0) / 100f))) - (food * 96) + starvationPenalty;
+            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * (defender.Party.Random.GetValue(0) / 100f))) - (daysToStarvation * 96) + starvationPenalty;
             return num < num3;
         }
         // For lord parties, calculate the bribe amount based on the total barter value of the lord and the troops in the party.

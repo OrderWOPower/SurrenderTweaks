@@ -94,8 +94,8 @@ namespace SurrenderTweaks.Behaviors
         {
             if (_defenderSettlement != null)
             {
-                _food = Math.Ceiling(_defenderSettlement.Town.FoodStocks / -_defenderSettlement.Town.FoodChange);
-                if (_food > 0)
+                _daysToStarvation = Math.Ceiling(_defenderSettlement.Town.FoodStocks / -_defenderSettlement.Town.FoodChange);
+                if (_daysToStarvation > 0)
                 {
                     _starvationPenalty[_defenderSettlement] = 0;
                 }
@@ -103,7 +103,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     _starvationPenalty[_defenderSettlement] += 8;
                 }
-                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, _food, _starvationPenalty[_defenderSettlement]);
+                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, _daysToStarvation, _starvationPenalty[_defenderSettlement]);
                 if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[_defenderSettlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[_defenderSettlement] == 1))
                 {
                     RequestParley();
@@ -192,6 +192,6 @@ namespace SurrenderTweaks.Behaviors
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _hasOfferedBribe = new Dictionary<Settlement, int>();
-        private double _food;
+        private double _daysToStarvation;
     }
 }

@@ -10,10 +10,21 @@ using SandBox;
 
 namespace SurrenderTweaks.Behaviors
 {
-    [HarmonyPatch(typeof(LordConversationsCampaignBehavior), "AddOtherConversations")]
+    [HarmonyPatch(typeof(LordConversationsCampaignBehavior), "conversation_player_can_attack_hero_on_clickable_condition")]
     public class LordBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions) => instructions.MethodReplacer(AccessTools.Method(typeof(CampaignGameStarter), "AddPlayerLine"), AccessTools.Method(typeof(LordBribeAndSurrenderBehavior), "AddPlayerLine"));
+        // If a party has a bribe cooldown, disable the option for attacking the party. Display the bribe cooldown's number of days in the option's tooltip.
+        private static void Postfix(ref bool __result, ref TextObject hint)
+        {
+            MobileParty conversationParty = MobileParty.ConversationParty;
+            if (_bribeCooldown.ContainsKey(conversationParty))
+            {
+                MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", _bribeCooldown[conversationParty]);
+                MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[conversationParty] > 1) ? 1 : 0);
+                hint = new TextObject("You cannot attack this party for {LORD_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                __result = false;
+            }
+        }
         public override void RegisterEvents()
         {
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
@@ -55,29 +66,6 @@ namespace SurrenderTweaks.Behaviors
                 Campaign.Current.ConversationManager.ConversationEndOneShot += conversation_lord_surrender_on_consequence;
             }, 100, null);
             starter.AddDialogLine("", "player_wants_prisoners", "close_window", "I would rather fight than be taken prisoner.[if:idle_angry][ib:warrior]", null, null, 100, null);
-        }
-        // Add a clickable condition to the dialog line for attacking a lord.
-        public static ConversationSentence AddPlayerLine(CampaignGameStarter instance, string id, string inputToken, string outputToken, string text, ConversationSentence.OnConditionDelegate conditionDelegate, ConversationSentence.OnConsequenceDelegate consequenceDelegate, int priority = 100, ConversationSentence.OnClickableConditionDelegate clickableConditionDelegate = null, ConversationSentence.OnPersuasionOptionDelegate persuasionOptionDelegate = null)
-        {
-            if (text == "{=ddhr2Xa3}I don't care. Yield or fight!")
-            {
-                return instance.AddPlayerLine(id, inputToken, outputToken, text, conditionDelegate, consequenceDelegate, priority, new ConversationSentence.OnClickableConditionDelegate(conversation_player_threats_lord_verify_on_clickable_condition), persuasionOptionDelegate);
-            }
-            return instance.AddPlayerLine(id, inputToken, outputToken, text, conditionDelegate, consequenceDelegate, priority, clickableConditionDelegate, persuasionOptionDelegate);
-        }
-        // If a party has a bribe cooldown, disable the option for attacking the party. Display the bribe cooldown's number of days in the option's tooltip.
-        private static bool conversation_player_threats_lord_verify_on_clickable_condition(out TextObject explanation)
-        {
-            MobileParty conversationParty = MobileParty.ConversationParty;
-            if (_bribeCooldown.ContainsKey(conversationParty))
-            {
-                MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", _bribeCooldown[conversationParty]);
-                MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[conversationParty] > 1) ? 1 : 0);
-                explanation = new TextObject("You cannot attack this party for {LORD_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
-                return false;
-            }
-            explanation = TextObject.Empty;
-            return true;
         }
         private bool conversation_lord_bribe_on_condition()
         {
