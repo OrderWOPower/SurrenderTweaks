@@ -2,6 +2,7 @@
 using Bannerlord.UIExtenderEx.ViewModels;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.MountAndBlade;
 
 namespace SurrenderTweaks
@@ -18,11 +19,11 @@ namespace SurrenderTweaks
             {
                 if (SurrenderTweaksHelper.IsBribeFeasible)
                 {
-                    SurrenderChance = "Chance of Surrender: High";
+                    SurrenderChance = new TextObject("{=SurrenderTweaks01}Chance of Surrender: High").ToString();
                 }
                 if (SurrenderTweaksHelper.IsSurrenderFeasible)
                 {
-                    SurrenderChance = "Chance of Surrender: Very High";
+                    SurrenderChance = new TextObject("{=SurrenderTweaks02}Chance of Surrender: Very High").ToString();
                 }
             }
         }

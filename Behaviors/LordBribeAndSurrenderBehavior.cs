@@ -21,7 +21,7 @@ namespace SurrenderTweaks.Behaviors
             {
                 MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", _bribeCooldown[conversationParty]);
                 MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[conversationParty] > 1) ? 1 : 0);
-                hint = new TextObject("You cannot attack this party for {LORD_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                hint = new TextObject("{=SurrenderTweaks03}You cannot attack this party for {LORD_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
                 __result = false;
             }
         }
@@ -58,14 +58,14 @@ namespace SurrenderTweaks.Behaviors
         // Add dialog lines for a lord offering a bribe or surrender.
         protected void AddDialogs(CampaignGameStarter starter)
         {
-            starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "lord_do_bribe", "I can pay you for my safe passage. Here is {MONEY}{GOLD_ICON}. Just take it and let me and my troops go.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_bribe_on_condition), null, 100, null);
-            starter.AddPlayerLine("", "lord_do_bribe", "close_window", "A wise choice for you and your troops. You are free to go.", null, new ConversationSentence.OnConsequenceDelegate(conversation_lord_bribe_on_consequence), 100, null, null);
-            starter.AddPlayerLine("", "lord_do_bribe", "player_wants_prisoners", "None of you are going anywhere. I want prisoners.", null, null, 100, null, null);
-            starter.AddDialogLine("", "player_wants_prisoners", "close_window", "I can't fight you. I yield. I am at your mercy.", new ConversationSentence.OnConditionDelegate(conversation_lord_surrender_on_condition), delegate
+            starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "lord_do_bribe", "{=SurrenderTweaks04}I can pay you for my safe passage. Here is {MONEY}{GOLD_ICON}. Just take it and let me and my troops go.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_bribe_on_condition), null, 100, null);
+            starter.AddPlayerLine("", "lord_do_bribe", "close_window", "{=SurrenderTweaks05}A wise choice for you and your troops. You are free to go.", null, new ConversationSentence.OnConsequenceDelegate(conversation_lord_bribe_on_consequence), 100, null, null);
+            starter.AddPlayerLine("", "lord_do_bribe", "player_wants_prisoners", "{=SurrenderTweaks06}None of you are going anywhere. I want prisoners.", null, null, 100, null, null);
+            starter.AddDialogLine("", "player_wants_prisoners", "close_window", "{=SurrenderTweaks07}I can't fight you. I yield. I am at your mercy.", new ConversationSentence.OnConditionDelegate(conversation_lord_surrender_on_condition), delegate
             {
                 Campaign.Current.ConversationManager.ConversationEndOneShot += conversation_lord_surrender_on_consequence;
             }, 100, null);
-            starter.AddDialogLine("", "player_wants_prisoners", "close_window", "I would rather fight than be taken prisoner.[if:idle_angry][ib:warrior]", null, null, 100, null);
+            starter.AddDialogLine("", "player_wants_prisoners", "close_window", "{=SurrenderTweaks08}I would rather fight than be taken prisoner.[if:idle_angry][ib:warrior]", null, null, 100, null);
         }
         private bool conversation_lord_bribe_on_condition()
         {

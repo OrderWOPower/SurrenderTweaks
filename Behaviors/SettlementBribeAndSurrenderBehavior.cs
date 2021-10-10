@@ -23,7 +23,7 @@ namespace SurrenderTweaks.Behaviors
             {
                 MBTextManager.SetTextVariable("SETTLEMENT_BRIBE_COOLDOWN", _bribeCooldown[currentSettlement]);
                 MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[currentSettlement] > 1) ? 1 : 0);
-                args.Tooltip = new TextObject("You cannot attack this settlement for {SETTLEMENT_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                args.Tooltip = new TextObject("{=SurrenderTweaks09}You cannot attack this settlement for {SETTLEMENT_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
                 args.IsEnabled = false;
             }
             else
@@ -141,10 +141,10 @@ namespace SurrenderTweaks.Behaviors
         // Add dialog lines for a settlement offering a bribe or surrender.
         protected void AddDialogs(CampaignGameStarter starter)
         {
-            starter.AddDialogLine("", "start", "settlement_do_bribe", "We are low on food. There is no need to starve us. We can pay you to end the siege. Here is {MONEY}{GOLD_ICON}. Just take it and have mercy on us.", new ConversationSentence.OnConditionDelegate(conversation_settlement_bribe_on_condition), null, 100, null);
-            starter.AddPlayerLine("", "settlement_do_bribe", "close_window", "I will have mercy on you for now. You have escaped doom, but not for long.", null, new ConversationSentence.OnConsequenceDelegate(conversation_settlement_bribe_on_consequence), 100, null, null);
-            starter.AddPlayerLine("", "settlement_do_bribe", "close_window", "What a joke! You will stop starving when this settlement falls... or when you fall.", null, null, 100, null, null);
-            starter.AddDialogLine("", "start", "close_window", "We are out of food. We don't want to starve any longer. We yield.", new ConversationSentence.OnConditionDelegate(conversation_settlement_surrender_on_condition), delegate
+            starter.AddDialogLine("", "start", "settlement_do_bribe", "{=SurrenderTweaks10}We are low on food. There is no need to starve us. We can pay you to end the siege. Here is {MONEY}{GOLD_ICON}. Just take it and have mercy on us.", new ConversationSentence.OnConditionDelegate(conversation_settlement_bribe_on_condition), null, 100, null);
+            starter.AddPlayerLine("", "settlement_do_bribe", "close_window", "{=SurrenderTweaks11}I will have mercy on you for now. You have escaped doom, but not for long.", null, new ConversationSentence.OnConsequenceDelegate(conversation_settlement_bribe_on_consequence), 100, null, null);
+            starter.AddPlayerLine("", "settlement_do_bribe", "close_window", "{=SurrenderTweaks12}What a joke! You will stop starving when this settlement falls... or when you fall.", null, null, 100, null, null);
+            starter.AddDialogLine("", "start", "close_window", "{=SurrenderTweaks13}We are out of food. We don't want to starve any longer. We yield.", new ConversationSentence.OnConditionDelegate(conversation_settlement_surrender_on_condition), delegate
             {
                 Campaign.Current.ConversationManager.ConversationEndOneShot += conversation_settlement_surrender_on_consequence;
             }, 100, null);
@@ -203,7 +203,7 @@ namespace SurrenderTweaks.Behaviors
             PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerSiege.BesiegedSettlement.Party.Name, troopRoster.TotalManCount, null);
         }
         // When the settlement requests a parley with the player, display a popup message.
-        public void RequestParley() => InformationManager.ShowInquiry(new InquiryData("Defenders request to parley", "The defenders sound a horn and open the gates. A messenger rides out towards your camp and requests to parley.", true, false, new TextObject("OK", null).ToString(), "", new Action(AcceptParley), null, ""), true);
+        public void RequestParley() => InformationManager.ShowInquiry(new InquiryData(new TextObject("{=SurrenderTweaks14}Defenders request to parley").ToString(), new TextObject("{=SurrenderTweaks15}The defenders sound a horn and open the gates. A messenger rides out towards your camp and requests to parley.").ToString(), true, false, new TextObject("{=SurrenderTweaks16}OK", null).ToString(), "", new Action(AcceptParley), null, ""), true);
         // When the player accepts a parley, start a conversation with the settlement defenders.
         public void AcceptParley() => CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.Leader, _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         private Settlement _defenderSettlement;
