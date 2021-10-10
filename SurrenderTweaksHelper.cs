@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
@@ -107,9 +106,7 @@ namespace SurrenderTweaks
             }
             gold = num2;
         }
-        public static void SetSettlementBribeCooldown(Dictionary<Settlement, int> settlementBribeCooldown) => SettlementBribeCooldown = settlementBribeCooldown;
         public static bool IsBribeFeasible { get; set; }
         public static bool IsSurrenderFeasible { get; set; }
-        public static Dictionary<Settlement, int> SettlementBribeCooldown { get; set; }
     }
 }

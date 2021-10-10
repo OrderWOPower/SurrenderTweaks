@@ -2,16 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
 namespace SurrenderTweaks.Behaviors
 {
+    [HarmonyPatch(typeof(EncounterGameMenuBehavior), "game_menu_town_town_besiege_on_condition")]
     public class SettlementBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
+        // If a settlement has a bribe cooldown, disable the option for besieging the settlement. Display the bribe cooldown's number of days in the option's tooltip.
+        private static void Postfix(MenuCallbackArgs args)
+        {
+            Settlement currentSettlement = Settlement.CurrentSettlement;
+            if (_bribeCooldown.ContainsKey(currentSettlement))
+            {
+                MBTextManager.SetTextVariable("SETTLEMENT_BRIBE_COOLDOWN", _bribeCooldown[currentSettlement]);
+                MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[currentSettlement] > 1) ? 1 : 0);
+                args.Tooltip = new TextObject("You cannot attack this settlement for {SETTLEMENT_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                args.IsEnabled = false;
+            }
+            else
+            {
+                args.IsEnabled = true;
+            }
+        }
         public override void RegisterEvents()
         {
             CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeStarted));
@@ -117,7 +136,6 @@ namespace SurrenderTweaks.Behaviors
             {
                 _defenderSettlement = null;
             }
-            SurrenderTweaksHelper.SetSettlementBribeCooldown(_bribeCooldown);
         }
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // Add dialog lines for a settlement offering a bribe or surrender.
@@ -190,7 +208,7 @@ namespace SurrenderTweaks.Behaviors
         public void AcceptParley() => CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.Leader, _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         private Settlement _defenderSettlement;
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
-        private Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
+        private static Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _hasOfferedBribe = new Dictionary<Settlement, int>();
         private double _daysToStarvation;
     }
