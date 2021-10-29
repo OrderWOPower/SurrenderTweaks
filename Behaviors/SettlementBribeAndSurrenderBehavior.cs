@@ -113,7 +113,7 @@ namespace SurrenderTweaks.Behaviors
         {
             if (_defenderSettlement != null)
             {
-                _daysToStarvation = Math.Ceiling(_defenderSettlement.Town.FoodStocks / -_defenderSettlement.Town.FoodChange);
+                _daysToStarvation = (int)Math.Ceiling(_defenderSettlement.Town.FoodStocks / -_defenderSettlement.Town.FoodChange);
                 if (_daysToStarvation > 0)
                 {
                     _starvationPenalty[_defenderSettlement] = 0;
@@ -210,6 +210,6 @@ namespace SurrenderTweaks.Behaviors
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
         private static Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _hasOfferedBribe = new Dictionary<Settlement, int>();
-        private double _daysToStarvation;
+        private int _daysToStarvation;
     }
 }

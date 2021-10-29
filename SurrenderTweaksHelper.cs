@@ -7,7 +7,7 @@ namespace SurrenderTweaks
 {
     public static class SurrenderTweaksHelper
     {
-        public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, double daysToStarvation = 0, int starvationPenalty = 0)
+        public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, int daysToStarvation = 0, int starvationPenalty = 0)
         {
             IsBribeFeasible = false;
             IsSurrenderFeasible = false;
@@ -22,7 +22,7 @@ namespace SurrenderTweaks
             }
         }
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
-        private static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, double daysToStarvation, int starvationPenalty, bool shouldSurrender)
+        private static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysToStarvation, int starvationPenalty, bool shouldSurrender)
         {
             float num = 0f;
             float num2 = 0f;
@@ -33,8 +33,8 @@ namespace SurrenderTweaks
             }
             else if (defender.IsCaravan || defender.IsLordParty || defender.IsMilitia)
             {
-                num = !shouldSurrender ? 0.3f : 0.1f;
-                num2 = !shouldSurrender ? 0.6f : 0.2f;
+                num = !shouldSurrender ? 0.4f : 0.1f;
+                num2 = !shouldSurrender ? 0.6f : 0.15f;
             }
             else if (defender.IsVillager)
             {
@@ -49,7 +49,7 @@ namespace SurrenderTweaks
             return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysToStarvation, starvationPenalty, num2));
         }
         // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
-        public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, double daysToStarvation, int starvationPenalty, float acceptablePowerRatio = 0.1f)
+        public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, int daysToStarvation, int starvationPenalty, float acceptablePowerRatio = 0.1f)
         {
             double num = defender.Party.TotalStrength;
             double num2 = attacker.Party.TotalStrength;
