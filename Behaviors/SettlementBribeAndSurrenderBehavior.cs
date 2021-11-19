@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -168,10 +168,6 @@ namespace SurrenderTweaks.Behaviors
         // Capture the settlement.
         private void conversation_settlement_surrender_on_consequence()
         {
-            PlayerEncounter.Init();
-            PlayerEncounter.Current.SetupFields(PartyBase.MainParty, PlayerSiege.BesiegedSettlement.Party);
-            PlayerEncounter.StartBattle();
-            PlayerEncounter.Update();
             Dictionary<PartyBase, ItemRoster> dictionary = new Dictionary<PartyBase, ItemRoster>();
             ItemRoster value = new ItemRoster();
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
@@ -201,11 +197,19 @@ namespace SurrenderTweaks.Behaviors
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);
             PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerSiege.BesiegedSettlement.Party.Name, troopRoster.TotalManCount, null);
+            PlayerEncounter.Init();
+            PlayerEncounter.Current.SetupFields(PartyBase.MainParty, PlayerSiege.BesiegedSettlement.Party);
+            PlayerEncounter.StartBattle();
+            PlayerEncounter.Update();
         }
         // When the settlement requests a parley with the player, display a popup message.
         public void RequestParley() => InformationManager.ShowInquiry(new InquiryData(new TextObject("{=SurrenderTweaks14}Defenders request to parley").ToString(), new TextObject("{=SurrenderTweaks15}The defenders sound a horn and open the gates. A messenger rides out towards your camp and requests to parley.").ToString(), true, false, new TextObject("{=SurrenderTweaks16}OK", null).ToString(), "", new Action(AcceptParley), null, ""), true);
         // When the player accepts a parley, start a conversation with the settlement defenders.
-        public void AcceptParley() => CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.Leader, _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
+        public void AcceptParley()
+        {
+            Campaign.Current.CurrentConversationContext = ConversationContext.Default;
+            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.Leader, _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
+        }
         private Settlement _defenderSettlement;
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
         private static Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
