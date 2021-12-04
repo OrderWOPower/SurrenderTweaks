@@ -82,8 +82,8 @@ namespace SurrenderTweaks
                 {
                     if (conversationParty.LeaderHero != null)
                     {
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
-                        num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
+                        num += (int)(0.2f * Campaign.Current.Models.ValuationModel.GetValueOfHero(conversationParty.LeaderHero));
+                        num += (int)(2.0f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
                         num2 = Math.Min(num, conversationParty.LeaderHero.Gold);
                     }
                 }
@@ -93,14 +93,14 @@ namespace SurrenderTweaks
                     {
                         if (defenderParty.LeaderHero != null)
                         {
-                            num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetValueOfHero(defenderParty.LeaderHero));
+                            num += (int)(0.2f * Campaign.Current.Models.ValuationModel.GetValueOfHero(defenderParty.LeaderHero));
                         }
                         if (defenderParty.MobileParty != null)
                         {
-                            num += (int)(0.1f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
+                            num += (int)(2.0f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
                         }
                     }
-                    num += (int)defenderSettlement.Prosperity * 3;
+                    num += (int)defenderSettlement.Prosperity * 6;
                     num2 = Math.Min(num, defenderSettlement.Town.Gold);
                 }
             }

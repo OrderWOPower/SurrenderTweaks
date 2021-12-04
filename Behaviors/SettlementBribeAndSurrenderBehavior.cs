@@ -33,12 +33,12 @@ namespace SurrenderTweaks.Behaviors
         }
         public override void RegisterEvents()
         {
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
             CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeStarted));
             CampaignEvents.SiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, bool>(OnSiegeCompleted));
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, new Action(OnHourlyTick));
             CampaignEvents.TickEvent.AddNonSerializedListener(this, new Action<float>(OnTick));
-            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
         }
         public override void SyncData(IDataStore dataStore)
         {
@@ -54,6 +54,7 @@ namespace SurrenderTweaks.Behaviors
                 InformationManager.DisplayMessage(new InformationMessage("Exception at SettlementBribeAndSurrenderBehavior.SyncData(): " + ex.Message));
             }
         }
+        public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // Add a starvation penalty to the besieged settlement.
         public void OnSiegeStarted(SiegeEvent siegeEvent)
         {
@@ -137,7 +138,6 @@ namespace SurrenderTweaks.Behaviors
                 _defenderSettlement = null;
             }
         }
-        public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // Add dialog lines for a settlement offering a bribe or surrender.
         protected void AddDialogs(CampaignGameStarter starter)
         {
@@ -180,7 +180,7 @@ namespace SurrenderTweaks.Behaviors
                 }
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {
-                    if (troopRosterElement.Character.HeroObject == null)
+                    if (!troopRosterElement.Character.IsHero)
                     {
                         troopRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                     }

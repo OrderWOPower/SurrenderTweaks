@@ -17,7 +17,7 @@ namespace SurrenderTweaks.Behaviors
         private static void Postfix(ref bool __result, ref TextObject hint)
         {
             MobileParty conversationParty = MobileParty.ConversationParty;
-            if (_bribeCooldown.ContainsKey(conversationParty))
+            if (_bribeCooldown.ContainsKey(conversationParty) && conversationParty.BesiegedSettlement?.OwnerClan != Clan.PlayerClan)
             {
                 MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", _bribeCooldown[conversationParty]);
                 MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[conversationParty] > 1) ? 1 : 0);
@@ -27,8 +27,8 @@ namespace SurrenderTweaks.Behaviors
         }
         public override void RegisterEvents()
         {
-            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
+            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
         }
         public override void SyncData(IDataStore dataStore)
         {
@@ -41,6 +41,7 @@ namespace SurrenderTweaks.Behaviors
                 InformationManager.DisplayMessage(new InformationMessage("Exception at LordBribeAndSurrenderBehavior.SyncData(): " + ex.Message));
             }
         }
+        public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // If a party has a bribe cooldown, decrease the bribe cooldown by 1 day.
         // If a party's bribe cooldown is 0 days, remove its bribe cooldown.
         public void OnDailyTick()
@@ -54,7 +55,6 @@ namespace SurrenderTweaks.Behaviors
                 }
             }
         }
-        public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
         // Add dialog lines for a lord offering a bribe or surrender.
         protected void AddDialogs(CampaignGameStarter starter)
         {
@@ -92,7 +92,7 @@ namespace SurrenderTweaks.Behaviors
             defender.ItemRoster.Clear();
             foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
             {
-                if (troopRosterElement.Character.HeroObject == null)
+                if (!troopRosterElement.Character.IsHero)
                 {
                     troopRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                 }
