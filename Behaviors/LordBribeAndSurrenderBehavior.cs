@@ -59,7 +59,7 @@ namespace SurrenderTweaks.Behaviors
         protected void AddDialogs(CampaignGameStarter starter)
         {
             starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "lord_do_bribe", "{=SurrenderTweaks04}I can pay you for my safe passage. Here is {MONEY}{GOLD_ICON}. Just take it and let me and my troops go.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_bribe_on_condition), null, 100, null);
-            starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "close_window", "{=SurrenderTweaks07}I can't fight you. I yield. I am at your mercy.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_siege_surrender_on_condition), delegate
+            starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "close_window", "{=SurrenderTweaks07}I can't fight you. I yield. I am at your mercy.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_surrender_on_condition), delegate
             {
                 Campaign.Current.ConversationManager.ConversationEndOneShot += conversation_lord_surrender_on_consequence;
             }, 100, null);
@@ -78,7 +78,6 @@ namespace SurrenderTweaks.Behaviors
             return SurrenderTweaksHelper.IsBribeFeasible && MobileParty.ConversationParty.BesiegedSettlement == null;
         }
         private bool conversation_lord_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible;
-        private bool conversation_lord_siege_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty.BesiegedSettlement != null;
         // If the player accepts a lord's bribe, transfer the bribe amount from the lord to the player. Add a bribe cooldown to the party and set it to 10 days.
         private void conversation_lord_bribe_on_consequence()
         {
