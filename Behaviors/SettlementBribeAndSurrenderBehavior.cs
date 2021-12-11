@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using Helpers;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.SandBox.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace SurrenderTweaks.Behaviors
@@ -114,8 +117,10 @@ namespace SurrenderTweaks.Behaviors
         {
             if (_defenderSettlement != null)
             {
-                int num = (int)Math.Ceiling(_defenderSettlement.Town.FoodStocks / -_defenderSettlement.Town.FoodChange);
-                if (num > 0)
+                float foodChange = _defenderSettlement.Town.FoodChange;
+                ValueTuple<int, int> townFoodAndMarketStocks = CampaignUIHelper.GetTownFoodAndMarketStocks(_defenderSettlement.Town);
+                int daysUntilNoFood = MathF.Ceiling(MathF.Abs((townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2) / foodChange));
+                if (!SettlementHelper.IsGarrisonStarving(_defenderSettlement))
                 {
                     _starvationPenalty[_defenderSettlement] = 0;
                 }
@@ -123,7 +128,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     _starvationPenalty[_defenderSettlement] += 8;
                 }
-                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, num, _starvationPenalty[_defenderSettlement]);
+                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, daysUntilNoFood, _starvationPenalty[_defenderSettlement]);
                 if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[_defenderSettlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[_defenderSettlement] == 1))
                 {
                     RequestParley();
@@ -208,7 +213,7 @@ namespace SurrenderTweaks.Behaviors
         public void AcceptParley()
         {
             Campaign.Current.CurrentConversationContext = ConversationContext.Default;
-            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.Leader, _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
+            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.MemberRoster.GetCharacterAtIndex(0), _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         }
         private Settlement _defenderSettlement;
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
