@@ -1,5 +1,5 @@
-﻿using System;
-using Helpers;
+﻿using Helpers;
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 
@@ -71,7 +71,7 @@ namespace SurrenderTweaks
             return num < num3;
         }
         // For lord parties, calculate the bribe amount based on the total barter value of the lord and the troops in the party.
-        // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the properity of the settlement.
+        // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the prosperity of the settlement.
         public static void BribeAmount(MobileParty conversationParty, Settlement defenderSettlement, out int gold)
         {
             int num = 0;

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Bannerlord.UIExtenderEx;
 using HarmonyLib;
-using Bannerlord.UIExtenderEx;
+using SurrenderTweaks.Behaviors;
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.MountAndBlade;
-using SurrenderTweaks.Behaviors;
 
 namespace SurrenderTweaks
 {

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using HarmonyLib;
+using SandBox;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
-using SandBox;
 
 namespace SurrenderTweaks.Behaviors
 {

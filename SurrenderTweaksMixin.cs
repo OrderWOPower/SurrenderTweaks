@@ -30,10 +30,7 @@ namespace SurrenderTweaks
         [DataSourceProperty]
         public string SurrenderChance
         {
-            get
-            {
-                return _surrenderChance;
-            }
+            get => _surrenderChance;
             set
             {
                 if (value != _surrenderChance)
