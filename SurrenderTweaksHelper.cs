@@ -67,7 +67,7 @@ namespace SurrenderTweaks
                     num2 += party.TotalStrength;
                 }
             }
-            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * (defender.Party.Random.GetValue(0) / 100f))) - (daysUntilNoFood * 96 * Settings.FoodBonusMultiplier) + (starvationPenalty * Settings.StarvationPenaltyMultiplier);
+            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * (defender.Party.Random.GetValue(0) / 100f))) - (daysUntilNoFood * 96 * Settings.NutritionBonusMultiplier) + (starvationPenalty * Settings.StarvationPenaltyMultiplier);
             return num < num3;
         }
         // For lord parties, calculate the bribe amount based on the total barter value of the lord and the troops in the party.

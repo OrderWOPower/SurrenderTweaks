@@ -18,7 +18,7 @@ namespace SurrenderTweaks
         public float SurrenderChanceMultiplier { get; set; } = 1.0f;
         [SettingPropertyFloatingInteger("{=SurrenderTweaks22}Settlement Nutrition Bonus", 0.0f, 10.0f, "0.0", Order = 2, RequireRestart = false, HintText = "{=SurrenderTweaks23}Multiplier for a besieged settlement's nutrition bonus. Default is 1.0.")]
         [SettingPropertyGroup("{=SurrenderTweaks17}Multipliers")]
-        public float FoodBonusMultiplier { get; set; } = 1.0f;
+        public float NutritionBonusMultiplier { get; set; } = 1.0f;
         [SettingPropertyFloatingInteger("{=SurrenderTweaks24}Settlement Starvation Penalty", 0.0f, 10.0f, "0.0", Order = 3, RequireRestart = false, HintText = "{=SurrenderTweaks25}Multiplier for a besieged settlement's starvation penalty. Default is 1.0.")]
         [SettingPropertyGroup("{=SurrenderTweaks17}Multipliers")]
         public float StarvationPenaltyMultiplier { get; set; } = 1.0f;
