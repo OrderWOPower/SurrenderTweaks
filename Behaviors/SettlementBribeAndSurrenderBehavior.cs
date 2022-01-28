@@ -47,7 +47,7 @@ namespace SurrenderTweaks.Behaviors
         {
             try
             {
-                dataStore.SyncData("_defenderSettlement", ref _defenderSettlement);
+                dataStore.SyncData("_defenderSettlements", ref _defenderSettlements);
                 dataStore.SyncData("_starvationPenalty", ref _starvationPenalty);
                 dataStore.SyncData("_settlementBribeCooldown", ref _bribeCooldown);
                 dataStore.SyncData("_hasOfferedBribe", ref _hasOfferedBribe);
@@ -61,17 +61,15 @@ namespace SurrenderTweaks.Behaviors
         // Add a starvation penalty to the besieged settlement.
         public void OnSiegeStarted(SiegeEvent siegeEvent)
         {
-            if (siegeEvent.BesiegerCamp.BesiegerParty.IsMainParty)
+            Settlement settlement = siegeEvent.BesiegedSettlement;
+            _defenderSettlements.Add(settlement);
+            if (!_starvationPenalty.ContainsKey(settlement))
             {
-                _defenderSettlement = siegeEvent.BesiegedSettlement;
-                if (!_starvationPenalty.ContainsKey(_defenderSettlement))
-                {
-                    _starvationPenalty.Add(_defenderSettlement, 0);
-                }
-                if (!_hasOfferedBribe.ContainsKey(_defenderSettlement))
-                {
-                    _hasOfferedBribe.Add(_defenderSettlement, 0);
-                }
+                _starvationPenalty.Add(settlement, 0);
+            }
+            if (!_hasOfferedBribe.ContainsKey(settlement))
+            {
+                _hasOfferedBribe.Add(settlement, 0);
             }
         }
         public void OnSiegeCompleted(Settlement settlement, MobileParty capturerParty, bool isWin, bool isSiege)
@@ -90,7 +88,7 @@ namespace SurrenderTweaks.Behaviors
         {
             foreach (Settlement settlement in _starvationPenalty.Keys.ToList())
             {
-                if (settlement != _defenderSettlement)
+                if (!_defenderSettlements.Contains(settlement))
                 {
                     _starvationPenalty.Remove(settlement);
                 }
@@ -98,49 +96,88 @@ namespace SurrenderTweaks.Behaviors
             foreach (Settlement settlement in _bribeCooldown.Keys.ToList())
             {
                 _bribeCooldown[settlement]--;
-                if (_bribeCooldown[settlement] == 0)
+                if (_bribeCooldown[settlement] <= 0)
                 {
                     _bribeCooldown.Remove(settlement);
                 }
             }
             foreach (Settlement settlement in _hasOfferedBribe.Keys.ToList())
             {
-                if (settlement != _defenderSettlement && !_bribeCooldown.ContainsKey(settlement))
+                if (!_defenderSettlements.Contains(settlement) && !_bribeCooldown.ContainsKey(settlement))
                 {
                     _hasOfferedBribe.Remove(settlement);
                 }
             }
         }
         // If a settlement has no food, increase its starvation penalty.
-        // If the settlement is willing to offer a bribe or surrender, make them request a parley with the player.
+        // If the settlement is willing to offer a bribe or surrender to the player, make them request a parley with the player.
+        // If the settlement is willing to offer a surrender to an AI attacker, capture the lords, capture all the troops in the settlement and capture all their trade items which do not belong to the settlement.
+        // Capture the settlement.
         public void OnHourlyTick()
         {
-            if (_defenderSettlement != null)
+            foreach (Settlement settlement in _defenderSettlements)
             {
-                float foodChange = _defenderSettlement.Town.FoodChange;
-                ValueTuple<int, int> townFoodAndMarketStocks = CampaignUIHelper.GetTownFoodAndMarketStocks(_defenderSettlement.Town);
+                float foodChange = settlement.Town.FoodChange;
+                ValueTuple<int, int> townFoodAndMarketStocks = CampaignUIHelper.GetTownFoodAndMarketStocks(settlement.Town);
                 int daysUntilNoFood = MathF.Ceiling(MathF.Abs((townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2) / foodChange));
-                if (!SettlementHelper.IsGarrisonStarving(_defenderSettlement))
+                MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
+                if (!SettlementHelper.IsGarrisonStarving(settlement))
                 {
-                    _starvationPenalty[_defenderSettlement] = 0;
+                    _starvationPenalty[settlement] = 0;
                 }
                 else
                 {
-                    _starvationPenalty[_defenderSettlement] += 8;
+                    _starvationPenalty[settlement] += 4;
                 }
-                SurrenderTweaksHelper.SetBribeOrSurrender(_defenderSettlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, daysUntilNoFood, _starvationPenalty[_defenderSettlement]);
-                if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[_defenderSettlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[_defenderSettlement] == 1))
+                if (attacker.IsMainParty)
                 {
-                    RequestParley();
-                    _hasOfferedBribe[_defenderSettlement] = 1;
+                    SurrenderTweaksHelper.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, daysUntilNoFood, _starvationPenalty[settlement]);
+                    if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[settlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[settlement] == 1))
+                    {
+                        RequestParley();
+                        _hasOfferedBribe[settlement] = 1;
+                    }
+                }
+                else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderTweaksHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
+                {
+                    foreach (PartyBase defender in settlement.SiegeParties.ToList())
+                    {
+                        if (defender != settlement.Party)
+                        {
+                            foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
+                            {
+                                attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
+                            }
+                            defender.ItemRoster.Clear();
+                        }
+                        foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
+                        {
+                            if (!troopRosterElement.Character.IsHero)
+                            {
+                                attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
+                            }
+                            else
+                            {
+                                TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
+                            }
+                        }
+                        if (defender.MobileParty != null)
+                        {
+                            DestroyPartyAction.Apply(attacker.Party, defender.MobileParty);
+                        }
+                    }
+                    settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                 }
             }
         }
         public void OnTick(float dt)
         {
-            if (PlayerSiege.PlayerSiegeEvent == null)
+            foreach (Settlement settlement in _defenderSettlements.ToList())
             {
-                _defenderSettlement = null;
+                if (settlement.SiegeEvent == null)
+                {
+                    _defenderSettlements.Remove(settlement);
+                }
             }
         }
         // Add dialog lines for a settlement offering a bribe or surrender.
@@ -189,10 +226,10 @@ namespace SurrenderTweaks.Behaviors
                     {
                         troopRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                     }
-                }
-                if (defender.LeaderHero != null)
-                {
-                    TakePrisonerAction.Apply(PartyBase.MainParty, defender.LeaderHero);
+                    else
+                    {
+                        TakePrisonerAction.Apply(PartyBase.MainParty, troopRosterElement.Character.HeroObject);
+                    }
                 }
                 if (defender.MobileParty != null)
                 {
@@ -213,9 +250,9 @@ namespace SurrenderTweaks.Behaviors
         public void AcceptParley()
         {
             Campaign.Current.CurrentConversationContext = ConversationContext.Default;
-            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(_defenderSettlement.MilitiaPartyComponent.Party.MemberRoster.GetCharacterAtIndex(0), _defenderSettlement.MilitiaPartyComponent.Party, false, true, false, false));
+            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(PlayerSiege.BesiegedSettlement.MilitiaPartyComponent.Party.MemberRoster.GetCharacterAtIndex(0), PlayerSiege.BesiegedSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         }
-        private Settlement _defenderSettlement;
+        private List<Settlement> _defenderSettlements = new List<Settlement>();
         private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
         private static Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
         private Dictionary<Settlement, int> _hasOfferedBribe = new Dictionary<Settlement, int>();

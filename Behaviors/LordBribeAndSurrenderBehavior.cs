@@ -49,7 +49,7 @@ namespace SurrenderTweaks.Behaviors
             foreach (MobileParty mobileParty in _bribeCooldown.Keys.ToList())
             {
                 _bribeCooldown[mobileParty]--;
-                if (_bribeCooldown[mobileParty] == 0)
+                if (_bribeCooldown[mobileParty] <= 0)
                 {
                     _bribeCooldown.Remove(mobileParty);
                 }
@@ -100,8 +100,11 @@ namespace SurrenderTweaks.Behaviors
                 {
                     troopRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                 }
+                else
+                {
+                    TakePrisonerAction.Apply(PartyBase.MainParty, troopRosterElement.Character.HeroObject);
+                }
             }
-            TakePrisonerAction.Apply(PartyBase.MainParty, defender.LeaderHero);
             DestroyPartyAction.Apply(PartyBase.MainParty, defender.MobileParty);
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);

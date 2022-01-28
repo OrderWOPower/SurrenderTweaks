@@ -37,6 +37,9 @@
     <Reference Include="Bannerlord.UIExtenderEx">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\Bannerlord.UIExtenderEx\bin\Win64_Shipping_Client\Bannerlord.UIExtenderEx.dll</HintPath>
     </Reference>
+    <Reference Include="MCMv4">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\Bannerlord.MBOptionScreen\bin\Win64_Shipping_Client\MCMv4.dll</HintPath>
+    </Reference>
     <Reference Include="SandBox">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SandBox\bin\Win64_Shipping_Client\SandBox.dll</HintPath>
     </Reference>
@@ -84,6 +87,7 @@
     <Compile Include="Behaviors\SettlementBribeAndSurrenderBehavior.cs" />
     <Compile Include="SurrenderTweaksHelper.cs" />
     <Compile Include="SurrenderTweaksMixin.cs" />
+    <Compile Include="SurrenderTweaksSettings.cs" />
     <Compile Include="SurrenderTweaksSubModule.cs" />
     <Compile Include="SurrenderTweaksPrefab.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
