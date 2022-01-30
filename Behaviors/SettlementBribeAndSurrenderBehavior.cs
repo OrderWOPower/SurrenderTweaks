@@ -117,56 +117,59 @@ namespace SurrenderTweaks.Behaviors
         {
             foreach (Settlement settlement in _defenderSettlements)
             {
-                float foodChange = settlement.Town.FoodChange;
-                ValueTuple<int, int> townFoodAndMarketStocks = CampaignUIHelper.GetTownFoodAndMarketStocks(settlement.Town);
-                int daysUntilNoFood = MathF.Ceiling(MathF.Abs((townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2) / foodChange));
-                MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
-                if (!SettlementHelper.IsGarrisonStarving(settlement))
+                if (settlement.SiegeEvent != null)
                 {
-                    _starvationPenalty[settlement] = 0;
-                }
-                else
-                {
-                    _starvationPenalty[settlement] += 4;
-                }
-                if (attacker.IsMainParty)
-                {
-                    SurrenderTweaksHelper.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, daysUntilNoFood, _starvationPenalty[settlement]);
-                    if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[settlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[settlement] == 1))
+                    float foodChange = settlement.Town.FoodChange;
+                    ValueTuple<int, int> townFoodAndMarketStocks = CampaignUIHelper.GetTownFoodAndMarketStocks(settlement.Town);
+                    int daysUntilNoFood = MathF.Ceiling(MathF.Abs((townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2) / foodChange));
+                    MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
+                    if (!SettlementHelper.IsGarrisonStarving(settlement))
                     {
-                        RequestParley();
-                        _hasOfferedBribe[settlement] = 1;
+                        _starvationPenalty[settlement] = 0;
                     }
-                }
-                else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderTweaksHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
-                {
-                    foreach (PartyBase defender in settlement.SiegeParties.ToList())
+                    else
                     {
-                        if (defender != settlement.Party)
+                        _starvationPenalty[settlement] += 4;
+                    }
+                    if (attacker.IsMainParty)
+                    {
+                        SurrenderTweaksHelper.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, daysUntilNoFood, _starvationPenalty[settlement]);
+                        if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[settlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[settlement] == 1))
                         {
-                            foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
-                            {
-                                attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
-                            }
-                            defender.ItemRoster.Clear();
-                        }
-                        foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
-                        {
-                            if (!troopRosterElement.Character.IsHero)
-                            {
-                                attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
-                            }
-                            else
-                            {
-                                TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
-                            }
-                        }
-                        if (defender.MobileParty != null)
-                        {
-                            DestroyPartyAction.Apply(attacker.Party, defender.MobileParty);
+                            RequestParley();
+                            _hasOfferedBribe[settlement] = 1;
                         }
                     }
-                    settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
+                    else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderTweaksHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
+                    {
+                        foreach (PartyBase defender in settlement.SiegeParties.ToList())
+                        {
+                            if (defender != settlement.Party)
+                            {
+                                foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
+                                {
+                                    attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
+                                }
+                                defender.ItemRoster.Clear();
+                            }
+                            foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
+                            {
+                                if (!troopRosterElement.Character.IsHero)
+                                {
+                                    attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
+                                }
+                                else
+                                {
+                                    TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
+                                }
+                            }
+                            if (defender.MobileParty != null)
+                            {
+                                DestroyPartyAction.Apply(attacker.Party, defender.MobileParty);
+                            }
+                        }
+                        settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
+                    }
                 }
             }
         }
