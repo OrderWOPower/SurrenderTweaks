@@ -163,10 +163,6 @@ namespace SurrenderTweaks.Behaviors
                                     TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
                                 }
                             }
-                            if (defender.MobileParty != null)
-                            {
-                                DestroyPartyAction.Apply(attacker.Party, defender.MobileParty);
-                            }
                         }
                         settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                     }

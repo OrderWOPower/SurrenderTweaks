@@ -44,7 +44,6 @@ namespace SurrenderTweaks.Behaviors
                         TakePrisonerAction.Apply(attackerParty, troopRosterElement.Character.HeroObject);
                     }
                 }
-                DestroyPartyAction.Apply(attackerParty, defender);
             }
         }
         public void OnTick(float dt)
