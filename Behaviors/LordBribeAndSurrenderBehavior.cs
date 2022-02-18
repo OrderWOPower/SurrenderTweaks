@@ -83,7 +83,7 @@ namespace SurrenderTweaks.Behaviors
         {
             SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, null, out int num);
             GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, num, false);
-            _bribeCooldown.Add(MobileParty.ConversationParty, 10);
+            _bribeCooldown.Add(MobileParty.ConversationParty, SurrenderTweaksHelper.Settings.LordBribeCooldownDays);
             PlayerEncounter.LeaveEncounter = true;
         }
         // If the player accepts a lord's surrender, capture the lord, capture all the troops in the party and capture all their trade items.

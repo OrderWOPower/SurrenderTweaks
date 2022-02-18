@@ -202,7 +202,7 @@ namespace SurrenderTweaks.Behaviors
         {
             SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement, out int num);
             GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, num, false);
-            _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, 10);
+            _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, SurrenderTweaksHelper.Settings.SettlementBribeCooldownDays);
             typeof(SiegeEventCampaignBehavior).GetMethod("LeaveSiege", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
         }
         // If the player accepts a settlement's surrender, capture the lords, capture all the troops in the settlement and capture all their trade items which do not belong to the settlement.
