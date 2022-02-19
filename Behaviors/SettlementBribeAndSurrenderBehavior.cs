@@ -38,10 +38,10 @@ namespace SurrenderTweaks.Behaviors
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
             CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeStarted));
+            CampaignEvents.OnSiegeEventEndedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeEnded));
             CampaignEvents.SiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, bool>(OnSiegeCompleted));
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
             CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, new Action(OnHourlyTick));
-            CampaignEvents.TickEvent.AddNonSerializedListener(this, new Action<float>(OnTick));
         }
         public override void SyncData(IDataStore dataStore)
         {
@@ -70,6 +70,16 @@ namespace SurrenderTweaks.Behaviors
             if (!_hasOfferedBribe.ContainsKey(settlement))
             {
                 _hasOfferedBribe.Add(settlement, 0);
+            }
+        }
+        public void OnSiegeEnded(SiegeEvent siegeEvent)
+        {
+            foreach (Settlement settlement in _defenderSettlements.ToList())
+            {
+                if (settlement.SiegeEvent == siegeEvent)
+                {
+                    _defenderSettlements.Remove(settlement);
+                }
             }
         }
         public void OnSiegeCompleted(Settlement settlement, MobileParty capturerParty, bool isWin, bool isSiege)
@@ -166,16 +176,6 @@ namespace SurrenderTweaks.Behaviors
                         }
                         settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                     }
-                }
-            }
-        }
-        public void OnTick(float dt)
-        {
-            foreach (Settlement settlement in _defenderSettlements.ToList())
-            {
-                if (settlement.SiegeEvent == null)
-                {
-                    _defenderSettlements.Remove(settlement);
                 }
             }
         }
