@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Helpers;
 using System;
 using System.Collections.Generic;
@@ -133,7 +133,7 @@ namespace SurrenderTweaks.Behaviors
                     }
                     if (attacker.IsMainParty)
                     {
-                        SurrenderTweaksHelper.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, MobileParty.MainParty, daysUntilNoFood, _starvationPenalty[settlement]);
+                        SurrenderTweaksHelper.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement]);
                         if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[settlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[settlement] == 1))
                         {
                             RequestParley();
