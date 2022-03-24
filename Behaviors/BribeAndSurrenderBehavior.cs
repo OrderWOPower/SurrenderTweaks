@@ -1,28 +1,42 @@
 ﻿using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.MapEvents;
+using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Core;
 
 namespace SurrenderTweaks.Behaviors
 {
     public class BribeAndSurrenderBehavior : CampaignBehaviorBase
     {
+        private bool _isBribeFeasible;
+
         public override void RegisterEvents()
         {
-            CampaignEvents.SetupPreConversationEvent.AddNonSerializedListener(this, new Action(OnSetupPreConversation));
+            CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnGameLoaded));
             CampaignEvents.MapEventStarted.AddNonSerializedListener(this, new Action<MapEvent, PartyBase, PartyBase>(OnMapEventStarted));
+            CampaignEvents.SetupPreConversationEvent.AddNonSerializedListener(this, new Action(OnSetupPreConversation));
             CampaignEvents.TickEvent.AddNonSerializedListener(this, new Action<float>(OnTick));
         }
-        public override void SyncData(IDataStore dataStore) { }
-        public void OnSetupPreConversation()
+
+        public override void SyncData(IDataStore dataStore)
         {
-            if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
+            try
             {
-                SurrenderTweaksHelper.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
+                dataStore.SyncData("_isBribeFeasible", ref _isBribeFeasible);
+            }
+            catch (Exception ex)
+            {
+                InformationManager.DisplayMessage(new InformationMessage(ex.Message + "\r\n" + ex.StackTrace.Substring(0, ex.StackTrace.IndexOf("\r\n"))));
             }
         }
+
+        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderTweaksHelper.SetBribe(_isBribeFeasible);
+
         // If a party is willing to offer a surrender to an AI attacker, capture the lord, capture all the troops in the party and capture all their trade items.
-        public void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
+        private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
         {
             MobileParty defender = defenderParty.MobileParty;
             MobileParty attacker = attackerParty.MobileParty;
@@ -46,12 +60,25 @@ namespace SurrenderTweaks.Behaviors
                 }
             }
         }
-        public void OnTick(float dt)
+
+        private void OnSetupPreConversation()
         {
-            if (PlayerSiege.PlayerSiegeEvent == null)
+            if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
+            {
+                SurrenderTweaksHelper.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
+            }
+            UpdateBribe();
+        }
+
+        private void OnTick(float dt)
+        {
+            if (MapEvent.PlayerMapEvent == null && PlayerSiege.PlayerSiegeEvent == null)
             {
                 SurrenderTweaksHelper.SetBribeOrSurrender(null, null);
             }
+            UpdateBribe();
         }
+
+        private void UpdateBribe() => _isBribeFeasible = SurrenderTweaksHelper.IsBribeFeasible;
     }
 }

@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using SandBox.View.Map;
 using System;
-using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.GameState;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.MountAndBlade.View.Screen;
 
@@ -11,8 +11,13 @@ namespace SurrenderTweaks
     [GameStateScreen(typeof(MapState))]
     public class SurrenderTweaksScreen : MapScreen
     {
+        private static PowerLevelComparer _powerLevelComparer;
+        private SurrenderTweaksMixin _surrenderTweaksMixin;
+
         public static void Postfix(PowerLevelComparer __instance) => _powerLevelComparer = __instance;
+
         public SurrenderTweaksScreen(MapState mapState) : base(mapState) { }
+
         protected override void OnFrameTick(float dt)
         {
             base.OnFrameTick(dt);
@@ -23,7 +28,5 @@ namespace SurrenderTweaks
             }
             _surrenderTweaksMixin?.SetSurrenderChance();
         }
-        private static PowerLevelComparer _powerLevelComparer;
-        private SurrenderTweaksMixin _surrenderTweaksMixin;
     }
 }

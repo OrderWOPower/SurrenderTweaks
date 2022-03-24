@@ -1,17 +1,30 @@
 ﻿using Helpers;
 using System;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Library;
 
 namespace SurrenderTweaks
 {
     public static class SurrenderTweaksHelper
     {
+        public static bool IsBribeFeasible { get; set; }
+
+        public static bool IsSurrenderFeasible { get; set; }
+
+        public static SurrenderTweaksSettings Settings => SurrenderTweaksSettings.Instance;
+
+        public static void SetBribe(bool isBribeFeasible) => IsBribeFeasible = isBribeFeasible;
+
         public static void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, int daysUntilNoFood = 0, int starvationPenalty = 0)
         {
             IsBribeFeasible = IsBribeOrSurrenderFeasible(defender, attacker, daysUntilNoFood, starvationPenalty, false);
             IsSurrenderFeasible = IsBribeOrSurrenderFeasible(defender, attacker, daysUntilNoFood, starvationPenalty, true);
         }
+
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
@@ -48,6 +61,7 @@ namespace SurrenderTweaks
                 return false;
             }
         }
+
         // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
         public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, float acceptablePowerRatio = 0.1f)
         {
@@ -70,6 +84,7 @@ namespace SurrenderTweaks
             double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * (defender.Party.Random.GetValue(0) / 100f))) - (daysUntilNoFood * 96 * Settings.NutritionBonusMultiplier) + (starvationPenalty * Settings.StarvationPenaltyMultiplier);
             return num < num3;
         }
+
         // For lord parties, calculate the bribe amount based on the total barter value of the lord and the troops in the party.
         // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the prosperity of the settlement.
         public static void BribeAmount(MobileParty conversationParty, Settlement defenderSettlement, out int gold)
@@ -115,8 +130,5 @@ namespace SurrenderTweaks
             }
             gold = num2;
         }
-        public static bool IsBribeFeasible { get; set; }
-        public static bool IsSurrenderFeasible { get; set; }
-        public static SurrenderTweaksSettings Settings => SurrenderTweaksSettings.Instance;
     }
 }

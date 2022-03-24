@@ -9,20 +9,8 @@ namespace SurrenderTweaks
     [ViewModelMixin]
     public class SurrenderTweaksMixin : BaseViewModelMixin<PowerLevelComparer>
     {
-        public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) { }
-        // Set the "Chance of Surrender" text depending on whether a bribe or a surrender is feasible.
-        public void SetSurrenderChance()
-        {
-            SurrenderChance = null;
-            if (SurrenderTweaksHelper.IsBribeFeasible)
-            {
-                SurrenderChance = new TextObject("{=SurrenderTweaks01}Chance of Surrender: High").ToString();
-            }
-            if (SurrenderTweaksHelper.IsSurrenderFeasible)
-            {
-                SurrenderChance = new TextObject("{=SurrenderTweaks02}Chance of Surrender: Very High").ToString();
-            }
-        }
+        private string _surrenderChance;
+
         [DataSourceProperty]
         public string SurrenderChance
         {
@@ -36,6 +24,21 @@ namespace SurrenderTweaks
                 }
             }
         }
-        private string _surrenderChance;
+
+        public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) { }
+
+        // Set the "Chance of Surrender" text depending on whether a bribe or a surrender is feasible.
+        public void SetSurrenderChance()
+        {
+            SurrenderChance = null;
+            if (SurrenderTweaksHelper.IsBribeFeasible)
+            {
+                SurrenderChance = new TextObject("{=SurrenderTweaks01}Chance of Surrender: High").ToString();
+            }
+            if (SurrenderTweaksHelper.IsSurrenderFeasible)
+            {
+                SurrenderChance = new TextObject("{=SurrenderTweaks02}Chance of Surrender: Very High").ToString();
+            }
+        }
     }
 }

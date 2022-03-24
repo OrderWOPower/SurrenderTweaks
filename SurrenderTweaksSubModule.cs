@@ -17,6 +17,7 @@ namespace SurrenderTweaks
             uiExtender.Register(typeof(SurrenderTweaksSubModule).Assembly);
             uiExtender.Enable();
         }
+
         protected override void OnGameStart(Game game, IGameStarter gameStarter)
         {
             if (game.GameType is Campaign)
