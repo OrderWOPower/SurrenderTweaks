@@ -61,7 +61,7 @@ namespace SurrenderTweaks.Behaviors
             }
             catch (Exception ex)
             {
-                InformationManager.DisplayMessage(new InformationMessage(ex.Message + "\r\n" + ex.StackTrace.Substring(0, ex.StackTrace.IndexOf("\r\n"))));
+                InformationManager.DisplayMessage(new InformationMessage(ex.Message + "\r\n" + ex.StackTrace));
             }
         }
 
