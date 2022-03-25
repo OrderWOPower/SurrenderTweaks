@@ -28,10 +28,10 @@ namespace SurrenderTweaks
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
-            float num = 0f;
-            float num2 = 0f;
             if (defender != null && attacker != null && daysUntilNoFood >= 0)
             {
+                float num = 0f;
+                float num2 = 0f;
                 if (defender.IsBandit)
                 {
                     num = !shouldSurrender ? 0.06f : 0.04f;
@@ -56,10 +56,7 @@ namespace SurrenderTweaks
                 }
                 return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num2));
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
