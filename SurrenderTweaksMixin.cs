@@ -30,12 +30,13 @@ namespace SurrenderTweaks
         // Set the "Chance of Surrender" text depending on whether a bribe or a surrender is feasible.
         public void SetSurrenderChance()
         {
+            SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
             SurrenderChance = null;
-            if (SurrenderTweaksHelper.IsBribeFeasible)
+            if (surrenderEvent.IsBribeFeasible)
             {
                 SurrenderChance = new TextObject("{=SurrenderTweaks01}Chance of Surrender: High").ToString();
             }
-            if (SurrenderTweaksHelper.IsSurrenderFeasible)
+            if (surrenderEvent.IsSurrenderFeasible)
             {
                 SurrenderChance = new TextObject("{=SurrenderTweaks02}Chance of Surrender: Very High").ToString();
             }

@@ -85,19 +85,17 @@ namespace SurrenderTweaks.Behaviors
 
         private bool conversation_lord_bribe_on_condition()
         {
-            SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, null, out int num);
-            MBTextManager.SetTextVariable("MONEY", num);
-            return SurrenderTweaksHelper.IsBribeFeasible && MobileParty.ConversationParty.BesiegedSettlement == null;
+            MBTextManager.SetTextVariable("MONEY", SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null));
+            return SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible && MobileParty.ConversationParty.BesiegedSettlement == null;
         }
 
-        private bool conversation_lord_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible;
+        private bool conversation_lord_surrender_on_condition() => SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible;
 
         // If the player accepts a lord's bribe, transfer the bribe amount from the lord to the player. Add a bribe cooldown to the party and set it to 10 days.
         private void conversation_lord_bribe_on_consequence()
         {
-            SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, null, out int num);
-            GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, num, false);
-            _bribeCooldown.Add(MobileParty.ConversationParty, SurrenderTweaksHelper.Settings.LordBribeCooldownDays);
+            GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null), false);
+            _bribeCooldown.Add(MobileParty.ConversationParty, SurrenderTweaksSettings.Instance.LordBribeCooldownDays);
             PlayerEncounter.LeaveEncounter = true;
         }
 

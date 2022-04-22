@@ -15,7 +15,6 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
-using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -126,6 +125,7 @@ namespace SurrenderTweaks.Behaviors
                 ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
                 int daysUntilNoFood = MathF.Ceiling(MathF.Abs((townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2) / foodChange));
                 MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
+                SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
                 if (!SettlementHelper.IsGarrisonStarving(settlement))
                 {
                     _starvationPenalty[settlement] = 0;
@@ -136,14 +136,14 @@ namespace SurrenderTweaks.Behaviors
                 }
                 if (attacker.IsMainParty)
                 {
-                    SurrenderTweaksHelper.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement]);
-                    if ((SurrenderTweaksHelper.IsBribeFeasible && _hasOfferedBribe[settlement] == 0) || (SurrenderTweaksHelper.IsSurrenderFeasible && _hasOfferedBribe[settlement] == 1))
+                    surrenderEvent.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement]);
+                    if ((surrenderEvent.IsBribeFeasible && _hasOfferedBribe[settlement] == 0) || (surrenderEvent.IsSurrenderFeasible && _hasOfferedBribe[settlement] == 1))
                     {
                         RequestParley();
                         _hasOfferedBribe[settlement] = 1;
                     }
                 }
-                else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderTweaksHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
+                else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
                 {
                     foreach (PartyBase defender in settlement.SiegeParties.ToList())
                     {
@@ -186,19 +186,17 @@ namespace SurrenderTweaks.Behaviors
 
         private bool conversation_settlement_bribe_on_condition()
         {
-            SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement, out int num);
-            MBTextManager.SetTextVariable("MONEY", num);
-            return SurrenderTweaksHelper.IsBribeFeasible && !SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
+            MBTextManager.SetTextVariable("MONEY", SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement));
+            return SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible && !SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
         }
 
-        private bool conversation_settlement_surrender_on_condition() => SurrenderTweaksHelper.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
+        private bool conversation_settlement_surrender_on_condition() => SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
 
         // If the player accepts a settlement's bribe, transfer the bribe amount from the settlement to the player and break the siege. Add a bribe cooldown to the settlement and set it to 10 days.
         private void conversation_settlement_bribe_on_consequence()
         {
-            SurrenderTweaksHelper.BribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement, out int num);
-            GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, num, false);
-            _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, SurrenderTweaksHelper.Settings.SettlementBribeCooldownDays);
+            GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement), false);
+            _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays);
             typeof(SiegeEventCampaignBehavior).GetMethod("LeaveSiege", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
         }
 

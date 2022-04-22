@@ -57,9 +57,6 @@
     <Reference Include="TaleWorlds.CampaignSystem">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.CampaignSystem.dll</HintPath>
     </Reference>
-    <Reference Include="TaleWorlds.CampaignSystem.ViewModelCollection">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.CampaignSystem.ViewModelCollection.dll</HintPath>
-    </Reference>
     <Reference Include="TaleWorlds.Core">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.dll</HintPath>
     </Reference>
@@ -94,7 +91,8 @@
     <Compile Include="Behaviors\PartyBribeAndSurrenderBehavior.cs" />
     <Compile Include="Behaviors\LordBribeAndSurrenderBehavior.cs" />
     <Compile Include="Behaviors\SettlementBribeAndSurrenderBehavior.cs" />
-    <Compile Include="SurrenderTweaksHelper.cs" />
+    <Compile Include="SurrenderEvent.cs" />
+    <Compile Include="SurrenderHelper.cs" />
     <Compile Include="SurrenderTweaksMixin.cs" />
     <Compile Include="SurrenderTweaksScreen.cs" />
     <Compile Include="SurrenderTweaksSettings.cs" />

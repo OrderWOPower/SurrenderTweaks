@@ -33,14 +33,14 @@ namespace SurrenderTweaks.Behaviors
             }
         }
 
-        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderTweaksHelper.SetBribe(_isBribeFeasible);
+        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderEvent.PlayerSurrenderEvent.SetBribe(_isBribeFeasible);
 
         // If a party is willing to offer a surrender to an AI attacker, capture the lord, capture all the troops in the party and capture all their trade items.
         private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
         {
             MobileParty defender = defenderParty.MobileParty;
             MobileParty attacker = attackerParty.MobileParty;
-            if (!mapEvent.IsPlayerMapEvent && SurrenderTweaksHelper.IsBribeOrSurrenderFeasible(defender, attacker, 0, 0, true))
+            if (!mapEvent.IsPlayerMapEvent && SurrenderHelper.IsBribeOrSurrenderFeasible(defender, attacker, 0, 0, true))
             {
                 foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
                 {
@@ -63,22 +63,22 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnSetupPreConversation()
         {
+            SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
             if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
             {
-                SurrenderTweaksHelper.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
+                surrenderEvent.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
             }
-            UpdateBribe();
+            _isBribeFeasible = surrenderEvent.IsBribeFeasible;
         }
 
         private void OnTick(float dt)
         {
+            SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
             if (MapEvent.PlayerMapEvent == null && PlayerSiege.PlayerSiegeEvent == null)
             {
-                SurrenderTweaksHelper.SetBribeOrSurrender(null, null);
+                surrenderEvent.SetBribeOrSurrender(null, null);
             }
-            UpdateBribe();
+            _isBribeFeasible = surrenderEvent.IsBribeFeasible;
         }
-
-        private void UpdateBribe() => _isBribeFeasible = SurrenderTweaksHelper.IsBribeFeasible;
     }
 }

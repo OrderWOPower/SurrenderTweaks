@@ -18,7 +18,7 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsBribeFeasible");
             }
 
-            private static void Postfix(ref bool __result) => __result = SurrenderTweaksHelper.IsBribeFeasible;
+            private static void Postfix(ref bool __result) => __result = SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible;
         }
 
         // Replace the value of the chance of bandits, caravans and villagers offering a surrender with the value calculated in this mod.
@@ -32,7 +32,7 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsSurrenderFeasible");
             }
 
-            private static void Postfix(ref bool __result) => __result = SurrenderTweaksHelper.IsSurrenderFeasible;
+            private static void Postfix(ref bool __result) => __result = SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible;
         }
     }
 }
