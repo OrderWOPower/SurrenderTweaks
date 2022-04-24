@@ -1,9 +1,12 @@
 ﻿using Bannerlord.UIExtenderEx;
 using HarmonyLib;
+using SandBox.View.Map;
 using SurrenderTweaks.Behaviors;
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.ScreenSystem;
 
 namespace SurrenderTweaks
 {
@@ -26,6 +29,15 @@ namespace SurrenderTweaks
                 campaignStarter.AddBehavior(new BribeAndSurrenderBehavior());
                 campaignStarter.AddBehavior(new LordBribeAndSurrenderBehavior());
                 campaignStarter.AddBehavior(new SettlementBribeAndSurrenderBehavior());
+                ScreenManager.OnPushScreen += OnPushScreen;
+            }
+        }
+
+        public void OnPushScreen(ScreenBase pushedScreen)
+        {
+            if (pushedScreen is MapScreen mapScreen)
+            {
+                mapScreen.AddMapView<SurrenderTweaksView>(Array.Empty<object>());
             }
         }
     }
