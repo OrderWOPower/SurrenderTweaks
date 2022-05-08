@@ -4,9 +4,9 @@ namespace SurrenderTweaks
 {
     public class SurrenderEvent
     {
-        private static readonly SurrenderEvent surrenderEvent = new SurrenderEvent();
+        private static readonly SurrenderEvent _surrenderEvent = new SurrenderEvent();
 
-        public static SurrenderEvent PlayerSurrenderEvent => surrenderEvent;
+        public static SurrenderEvent PlayerSurrenderEvent => _surrenderEvent;
 
         public bool IsBribeFeasible { get; set; }
 
