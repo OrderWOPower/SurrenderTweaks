@@ -1,5 +1,6 @@
 ﻿using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
+using System;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -10,6 +11,8 @@ namespace SurrenderTweaks
     public class SurrenderTweaksMixin : BaseViewModelMixin<PowerLevelComparer>
     {
         private string _surrenderChance;
+
+        public static WeakReference<SurrenderTweaksMixin> MixinWeakReference { get; set; }
 
         [DataSourceProperty]
         public string SurrenderChance
@@ -25,7 +28,7 @@ namespace SurrenderTweaks
             }
         }
 
-        public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) { }
+        public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) => MixinWeakReference = new WeakReference<SurrenderTweaksMixin>(this);
 
         // Set the "Chance of Surrender" text depending on whether a bribe or a surrender is feasible.
         public void SetSurrenderChance()
