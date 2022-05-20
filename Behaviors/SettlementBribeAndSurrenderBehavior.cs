@@ -119,7 +119,7 @@ namespace SurrenderTweaks.Behaviors
         // Capture the settlement.
         public void OnHourlyTickSettlement(Settlement settlement)
         {
-            if (settlement.SiegeEvent != null)
+            if (settlement.SiegeEvent != null && _hasOfferedBribe.ContainsKey(settlement) && _starvationPenalty.ContainsKey(settlement))
             {
                 float foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
                 ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
