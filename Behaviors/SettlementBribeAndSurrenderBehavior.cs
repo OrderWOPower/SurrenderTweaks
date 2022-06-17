@@ -11,6 +11,7 @@ using TaleWorlds.CampaignSystem.Conversation;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Inventory;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -145,7 +146,7 @@ namespace SurrenderTweaks.Behaviors
                 }
                 else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
                 {
-                    foreach (PartyBase defender in settlement.SiegeParties.ToList())
+                    foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
                     {
                         if (defender != settlement.Party)
                         {
@@ -207,7 +208,7 @@ namespace SurrenderTweaks.Behaviors
             Dictionary<PartyBase, ItemRoster> dictionary = new Dictionary<PartyBase, ItemRoster>();
             ItemRoster value = new ItemRoster();
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
-            foreach (PartyBase defender in PlayerSiege.BesiegedSettlement.SiegeParties.ToList())
+            foreach (PartyBase defender in PlayerSiege.BesiegedSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
             {
                 if (defender != PlayerSiege.BesiegedSettlement.Party)
                 {

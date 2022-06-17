@@ -2,6 +2,7 @@
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -52,21 +53,21 @@ namespace SurrenderTweaks
             double num = defender.Party.TotalStrength;
             double num2 = attacker.Party.TotalStrength;
             SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
-            foreach (PartyBase party in defender.CurrentSettlement.SiegeParties)
+            foreach (PartyBase party in defender.CurrentSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
             {
                 if (party != defender.Party)
                 {
                     num += party.TotalStrength;
                 }
             }
-            foreach (PartyBase party in attacker.BesiegerCamp.SiegeParties)
+            foreach (PartyBase party in attacker.BesiegerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
             {
                 if (party != attacker.Party)
                 {
                     num2 += party.TotalStrength;
                 }
             }
-            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * (defender.Party.Random.GetValue(0) / 100f))) - (daysUntilNoFood * 96 * settings.NutritionBonusMultiplier) + (starvationPenalty * settings.StarvationPenaltyMultiplier);
+            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * defender.Party.RandomFloat(0.5f, 1f))) - (daysUntilNoFood * 96 * settings.NutritionBonusMultiplier) + (starvationPenalty * settings.StarvationPenaltyMultiplier);
             return num < num3;
         }
 
@@ -96,7 +97,7 @@ namespace SurrenderTweaks
                 }
                 else
                 {
-                    foreach (PartyBase defenderParty in defenderSettlement.SiegeParties)
+                    foreach (PartyBase defenderParty in defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
                     {
                         if (defenderParty.MobileParty != null)
                         {
