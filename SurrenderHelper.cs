@@ -19,6 +19,7 @@ namespace SurrenderTweaks
             {
                 float num = 0f;
                 float num2 = 0f;
+                int num3;
                 SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
                 if (defender.IsBandit)
                 {
@@ -37,7 +38,7 @@ namespace SurrenderTweaks
                 }
                 num *= !shouldSurrender ? settings.BribeChanceMultiplier : settings.SurrenderChanceMultiplier;
                 num2 *= !shouldSurrender ? settings.BribeChanceMultiplier : settings.SurrenderChanceMultiplier;
-                int num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num)) ? 33 : 67;
+                num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num)) ? 33 : 67;
                 if (attacker.IsMainParty && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
                 {
                     num3 = MathF.Round(num3 * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus * 0.01f));
@@ -50,25 +51,29 @@ namespace SurrenderTweaks
         // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
         public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, float acceptablePowerRatio = 0.1f)
         {
-            double num = defender.Party.TotalStrength;
-            double num2 = attacker.Party.TotalStrength;
-            SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
-            foreach (PartyBase party in defender.CurrentSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
+            if (defender.CurrentSettlement != null && attacker.BesiegerCamp != null)
             {
-                if (party != defender.Party)
+                double num = defender.Party.TotalStrength;
+                double num2 = attacker.Party.TotalStrength;
+                SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
+                foreach (PartyBase party in defender.CurrentSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
                 {
-                    num += party.TotalStrength;
+                    if (party != defender.Party)
+                    {
+                        num += party.TotalStrength;
+                    }
                 }
-            }
-            foreach (PartyBase party in attacker.BesiegerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
-            {
-                if (party != attacker.Party)
+                foreach (PartyBase party in attacker.BesiegerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
                 {
-                    num2 += party.TotalStrength;
+                    if (party != attacker.Party)
+                    {
+                        num2 += party.TotalStrength;
+                    }
                 }
+                double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * defender.Party.RandomFloat(0.5f, 1f))) - (daysUntilNoFood * 96 * settings.NutritionBonusMultiplier) + (starvationPenalty * settings.StarvationPenaltyMultiplier);
+                return num < num3;
             }
-            double num3 = ((double)(num2 * acceptablePowerRatio) * (0.5f + 0.5f * defender.Party.RandomFloat(0.5f, 1f))) - (daysUntilNoFood * 96 * settings.NutritionBonusMultiplier) + (starvationPenalty * settings.StarvationPenaltyMultiplier);
-            return num < num3;
+            return false;
         }
 
         // For lord parties, calculate the bribe amount based on the total barter value of the lord and the troops in the party.
