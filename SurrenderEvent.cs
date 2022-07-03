@@ -12,7 +12,11 @@ namespace SurrenderTweaks
 
         public bool IsSurrenderFeasible { get; set; }
 
-        public void SetBribe(bool isBribeFeasible) => IsBribeFeasible = isBribeFeasible;
+        public void SetBribeOrSurrender(bool isBribeFeasible, bool isSurrenderFeasible)
+        {
+            IsBribeFeasible = isBribeFeasible;
+            IsSurrenderFeasible = isSurrenderFeasible;
+        }
 
         public void SetBribeOrSurrender(MobileParty defender, MobileParty attacker, int daysUntilNoFood = 0, int starvationPenalty = 0)
         {

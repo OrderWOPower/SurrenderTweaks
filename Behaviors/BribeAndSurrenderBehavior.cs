@@ -13,6 +13,7 @@ namespace SurrenderTweaks.Behaviors
     public class BribeAndSurrenderBehavior : CampaignBehaviorBase
     {
         private bool _isBribeFeasible;
+        private bool _isSurrenderFeasible;
 
         public override void RegisterEvents()
         {
@@ -27,6 +28,7 @@ namespace SurrenderTweaks.Behaviors
             try
             {
                 dataStore.SyncData("_isBribeFeasible", ref _isBribeFeasible);
+                dataStore.SyncData("_isSurrenderFeasible", ref _isSurrenderFeasible);
             }
             catch (Exception ex)
             {
@@ -34,7 +36,7 @@ namespace SurrenderTweaks.Behaviors
             }
         }
 
-        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderEvent.PlayerSurrenderEvent.SetBribe(_isBribeFeasible);
+        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderEvent.PlayerSurrenderEvent.SetBribeOrSurrender(_isBribeFeasible, _isSurrenderFeasible);
 
         // If a party is willing to offer a surrender to an AI attacker, capture the lord, capture all the troops in the party and capture all their trade items.
         private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
@@ -70,6 +72,7 @@ namespace SurrenderTweaks.Behaviors
                 surrenderEvent.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
             }
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
+            _isSurrenderFeasible = surrenderEvent.IsSurrenderFeasible;
         }
 
         private void OnTick(float dt)
@@ -80,6 +83,7 @@ namespace SurrenderTweaks.Behaviors
                 surrenderEvent.SetBribeOrSurrender(null, null);
             }
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
+            _isSurrenderFeasible = surrenderEvent.IsSurrenderFeasible;
         }
     }
 }
