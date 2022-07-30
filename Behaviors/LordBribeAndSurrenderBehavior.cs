@@ -86,7 +86,7 @@ namespace SurrenderTweaks.Behaviors
         private bool conversation_lord_bribe_on_condition()
         {
             MBTextManager.SetTextVariable("MONEY", SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null));
-            return SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible && MobileParty.ConversationParty.BesiegedSettlement == null;
+            return SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible && MobileParty.ConversationParty.MapEvent == null && MobileParty.ConversationParty.SiegeEvent == null;
         }
 
         private bool conversation_lord_surrender_on_condition() => SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible;
