@@ -102,22 +102,25 @@ namespace SurrenderTweaks
                 }
                 else
                 {
-                    foreach (PartyBase defenderParty in defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
+                    if (defenderSettlement != null)
                     {
-                        if (defenderParty.MobileParty != null)
+                        foreach (PartyBase defenderParty in defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege))
                         {
-                            num += (int)(2f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
-                            foreach (TroopRosterElement troopRosterElement in defenderParty.MemberRoster.GetTroopRoster())
+                            if (defenderParty.MobileParty != null)
                             {
-                                if (troopRosterElement.Character.IsHero)
+                                num += (int)(2f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
+                                foreach (TroopRosterElement troopRosterElement in defenderParty.MemberRoster.GetTroopRoster())
                                 {
-                                    num += (int)(0.2f * Campaign.Current.Models.ValuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
+                                    if (troopRosterElement.Character.IsHero)
+                                    {
+                                        num += (int)(0.2f * Campaign.Current.Models.ValuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
+                                    }
                                 }
                             }
                         }
+                        num += (int)defenderSettlement.Prosperity * 6;
+                        num2 = (int)Math.Min(num * settings.BribeAmountMultiplier, defenderSettlement.Town.Gold);
                     }
-                    num += (int)defenderSettlement.Prosperity * 6;
-                    num2 = (int)Math.Min(num * settings.BribeAmountMultiplier, defenderSettlement.Town.Gold);
                 }
             }
             return num2;
