@@ -28,8 +28,27 @@ namespace SurrenderTweaks
                 }
                 else if (defender.IsCaravan || defender.IsLordParty || defender.IsMilitia)
                 {
-                    num = !shouldSurrender || defender.LeaderHero?.GetTraitLevel(DefaultTraits.Valor) < 0 ? 0.4f : 0.1f;
-                    num2 = !shouldSurrender || defender.LeaderHero?.GetTraitLevel(DefaultTraits.Valor) < 0 ? 0.6f : 0.15f;
+                    Hero defenderLeader = defender.LeaderHero;
+                    Hero attackerLeader = attacker.LeaderHero;
+                    int relation = 0;
+                    int defenderTraitLevels = 0;
+                    int attackerTraitLevels = 0;
+                    if (defenderLeader != null && attackerLeader != null)
+                    {
+                        relation = CharacterRelationManager.GetHeroRelation(defenderLeader, attackerLeader);
+                        defenderTraitLevels = defenderLeader.GetTraitLevel(DefaultTraits.Mercy) + defenderLeader.GetTraitLevel(DefaultTraits.Valor) + defenderLeader.GetTraitLevel(DefaultTraits.Honor) + defenderLeader.GetTraitLevel(DefaultTraits.Generosity) + defenderLeader.GetTraitLevel(DefaultTraits.Calculating);
+                        attackerTraitLevels = attackerLeader.GetTraitLevel(DefaultTraits.Mercy) + attackerLeader.GetTraitLevel(DefaultTraits.Valor) + attackerLeader.GetTraitLevel(DefaultTraits.Honor) + attackerLeader.GetTraitLevel(DefaultTraits.Generosity) + attackerLeader.GetTraitLevel(DefaultTraits.Calculating);
+                    }
+                    if (!shouldSurrender || relation > 25 || defenderTraitLevels + attackerTraitLevels > 0)
+                    {
+                        num = 0.4f;
+                        num2 = 0.6f;
+                    }
+                    else if (shouldSurrender || relation < -25 || defenderTraitLevels + attackerTraitLevels < 0)
+                    {
+                        num = 0.1f;
+                        num2 = 0.15f;
+                    }
                 }
                 else if (defender.IsVillager)
                 {
