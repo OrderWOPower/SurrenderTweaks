@@ -67,7 +67,7 @@ namespace SurrenderTweaks.Behaviors
         private void OnSetupPreConversation()
         {
             SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
-            if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
+            if (MobileParty.ConversationParty != null && MobileParty.ConversationParty.Army == null && !MobileParty.ConversationParty.IsMilitia)
             {
                 surrenderEvent.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
             }
