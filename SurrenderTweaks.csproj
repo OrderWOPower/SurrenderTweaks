@@ -85,7 +85,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Behaviors\BribeAndSurrenderBehavior.cs" />
-    <Compile Include="Behaviors\PartyBribeAndSurrenderBehavior.cs" />
     <Compile Include="Behaviors\LordBribeAndSurrenderBehavior.cs" />
     <Compile Include="Behaviors\SettlementBribeAndSurrenderBehavior.cs" />
     <Compile Include="SurrenderEvent.cs" />

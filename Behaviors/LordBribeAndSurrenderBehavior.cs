@@ -107,6 +107,7 @@ namespace SurrenderTweaks.Behaviors
             ItemRoster value = new ItemRoster(defender.ItemRoster);
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
             defender.ItemRoster.Clear();
+            SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
             foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
             {
                 if (!troopRosterElement.Character.IsHero)

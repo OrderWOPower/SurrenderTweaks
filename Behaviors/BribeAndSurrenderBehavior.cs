@@ -1,6 +1,11 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -50,6 +55,7 @@ namespace SurrenderTweaks.Behaviors
                     attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
                 }
                 defender.ItemRoster.Clear();
+                SurrenderHelper.AddPrisonersAsCasualties(attacker, defender);
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {
                     if (!troopRosterElement.Character.IsHero)
@@ -84,6 +90,45 @@ namespace SurrenderTweaks.Behaviors
             }
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
             _isSurrenderFeasible = surrenderEvent.IsSurrenderFeasible;
+        }
+
+        [HarmonyPatch]
+        public class BribeConditionBehavior
+        {
+            private static IEnumerable<MethodBase> TargetMethods()
+            {
+                yield return AccessTools.Method(typeof(BanditsCampaignBehavior), "conversation_bandits_will_join_player_on_condition");
+                yield return AccessTools.Method(typeof(CaravansCampaignBehavior), "IsBribeFeasible");
+                yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsBribeFeasible");
+            }
+
+            private static void Postfix(ref bool __result) => __result = SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible;
+        }
+
+        [HarmonyPatch]
+        public class SurrenderConditionBehavior
+        {
+            private static IEnumerable<MethodBase> TargetMethods()
+            {
+                yield return AccessTools.Method(typeof(BanditsCampaignBehavior), "conversation_bandits_surrender_on_condition");
+                yield return AccessTools.Method(typeof(CaravansCampaignBehavior), "IsSurrenderFeasible");
+                yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsSurrenderFeasible");
+            }
+
+            private static void Postfix(ref bool __result) => __result = SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible;
+        }
+
+        [HarmonyPatch]
+        public class SurrenderConsequenceBehavior
+        {
+            private static IEnumerable<MethodBase> TargetMethods()
+            {
+                yield return AccessTools.Method(typeof(BanditsCampaignBehavior), "conversation_bandits_surrender_on_consequence");
+                yield return AccessTools.Method(typeof(CaravansCampaignBehavior), "conversation_caravan_took_prisoner_on_consequence");
+                yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "conversation_village_farmer_took_prisoner_on_consequence");
+            }
+
+            private static void Prefix() => SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, PlayerEncounter.EncounteredMobileParty);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Helpers;
+﻿using HarmonyLib;
+using Helpers;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -143,6 +144,18 @@ namespace SurrenderTweaks
                 }
             }
             return num2;
+        }
+
+        // Check whether Diplomacy is loaded.
+        public static void AddPrisonersAsCasualties(MobileParty attacker, MobileParty defender)
+        {
+            int prisoners = defender.MemberRoster.TotalManCount;
+            Type warExhaustionManager = AccessTools.TypeByName("WarExhaustionManager");
+            attacker.MapFaction.GetStanceWith(defender.MapFaction).Casualties1 += prisoners;
+            if (attacker.MapFaction.IsKingdomFaction && defender.MapFaction.IsKingdomFaction)
+            {
+                AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion")?.Invoke(AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null), new object[] { (Kingdom)defender.MapFaction, (Kingdom)attacker.MapFaction, prisoners });
+            }
         }
     }
 }
