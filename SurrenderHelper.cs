@@ -147,12 +147,12 @@ namespace SurrenderTweaks
         }
 
         // Check whether Diplomacy is loaded.
-        public static void AddPrisonersAsCasualties(MobileParty attacker, MobileParty defender)
+        public static void AddPrisonersAsCasualties(MobileParty defender, MobileParty attacker)
         {
             int prisoners = defender.MemberRoster.TotalManCount;
             Type warExhaustionManager = AccessTools.TypeByName("WarExhaustionManager");
-            attacker.MapFaction.GetStanceWith(defender.MapFaction).Casualties1 += prisoners;
-            if (attacker.MapFaction.IsKingdomFaction && defender.MapFaction.IsKingdomFaction)
+            defender.MapFaction.GetStanceWith(attacker.MapFaction).Casualties2 += prisoners;
+            if (defender.MapFaction.IsKingdomFaction && attacker.MapFaction.IsKingdomFaction)
             {
                 AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion")?.Invoke(AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null), new object[] { (Kingdom)defender.MapFaction, (Kingdom)attacker.MapFaction, prisoners });
             }

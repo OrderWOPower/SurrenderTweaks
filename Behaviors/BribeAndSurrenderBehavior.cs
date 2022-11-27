@@ -5,6 +5,7 @@ using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -102,7 +103,7 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsBribeFeasible");
             }
 
-            private static void Postfix(ref bool __result) => __result = SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible;
+            private static void Postfix(MethodBase __originalMethod, ref bool __result) => __result = __originalMethod.DeclaringType == typeof(BanditsCampaignBehavior) && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.PartnersInCrime) ? true : SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible;
         }
 
         [HarmonyPatch]
@@ -123,7 +124,6 @@ namespace SurrenderTweaks.Behaviors
         {
             private static IEnumerable<MethodBase> TargetMethods()
             {
-                yield return AccessTools.Method(typeof(BanditsCampaignBehavior), "conversation_bandits_surrender_on_consequence");
                 yield return AccessTools.Method(typeof(CaravansCampaignBehavior), "conversation_caravan_took_prisoner_on_consequence");
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "conversation_village_farmer_took_prisoner_on_consequence");
             }
