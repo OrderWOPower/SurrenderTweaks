@@ -151,10 +151,11 @@ namespace SurrenderTweaks
         {
             int prisoners = defender.MemberRoster.TotalManCount;
             Type warExhaustionManager = AccessTools.TypeByName("WarExhaustionManager");
-            defender.MapFaction.GetStanceWith(attacker.MapFaction).Casualties2 += prisoners;
-            if (defender.MapFaction.IsKingdomFaction && attacker.MapFaction.IsKingdomFaction)
+            object instance = AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null);
+            defender.MapFaction.GetStanceWith(attacker.MapFaction).Casualties1 += prisoners;
+            if (instance != null && defender.MapFaction.IsKingdomFaction && attacker.MapFaction.IsKingdomFaction)
             {
-                AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion")?.Invoke(AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null), new object[] { (Kingdom)defender.MapFaction, (Kingdom)attacker.MapFaction, prisoners });
+                AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion").Invoke(instance, new object[] { (Kingdom)defender.MapFaction, (Kingdom)attacker.MapFaction, prisoners });
             }
         }
     }

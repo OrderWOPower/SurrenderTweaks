@@ -170,7 +170,7 @@ namespace SurrenderTweaks.Behaviors
                                 attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
                             }
                             defender.ItemRoster.Clear();
-                            SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
+                            SurrenderHelper.AddPrisonersAsCasualties(defender.MobileParty, attacker);
                         }
                         foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                         {
@@ -230,7 +230,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     value.Add(defender.ItemRoster);
                     defender.ItemRoster.Clear();
-                    SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
+                    SurrenderHelper.AddPrisonersAsCasualties(defender.MobileParty, MobileParty.MainParty);
                 }
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {

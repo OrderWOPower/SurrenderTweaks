@@ -56,7 +56,7 @@ namespace SurrenderTweaks.Behaviors
                     attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
                 }
                 defender.ItemRoster.Clear();
-                SurrenderHelper.AddPrisonersAsCasualties(attacker, defender);
+                SurrenderHelper.AddPrisonersAsCasualties(defender, attacker);
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {
                     if (!troopRosterElement.Character.IsHero)
@@ -128,7 +128,7 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "conversation_village_farmer_took_prisoner_on_consequence");
             }
 
-            private static void Prefix() => SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, PlayerEncounter.EncounteredMobileParty);
+            private static void Prefix() => SurrenderHelper.AddPrisonersAsCasualties(PlayerEncounter.EncounteredMobileParty, MobileParty.MainParty);
         }
     }
 }
