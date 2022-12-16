@@ -16,7 +16,7 @@ namespace SurrenderTweaks
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
-            if (defender != null && attacker != null && daysUntilNoFood >= 0)
+            if (defender != null && attacker != null && defender.Army == null && daysUntilNoFood >= 0)
             {
                 float num = 0f;
                 float num2 = 0f;
