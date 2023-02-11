@@ -170,7 +170,7 @@ namespace SurrenderTweaks.Behaviors
                                 attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
                             }
                             defender.ItemRoster.Clear();
-                            SurrenderHelper.AddPrisonersAsCasualties(defender.MobileParty, attacker);
+                            SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
                         }
                         foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                         {
@@ -183,6 +183,7 @@ namespace SurrenderTweaks.Behaviors
                                 TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
                             }
                         }
+                        defender.MemberRoster.Clear();
                     }
                     settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                 }
@@ -230,7 +231,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     value.Add(defender.ItemRoster);
                     defender.ItemRoster.Clear();
-                    SurrenderHelper.AddPrisonersAsCasualties(defender.MobileParty, MobileParty.MainParty);
+                    SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
                 }
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {

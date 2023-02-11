@@ -8,6 +8,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace SurrenderTweaks
 {
@@ -16,7 +17,7 @@ namespace SurrenderTweaks
         // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
-            if (defender != null && attacker != null && defender.Army == null && daysUntilNoFood >= 0)
+            if (defender != null && attacker != null && defender.Army == null && defender.DefaultBehavior != AiBehavior.EngageParty && defender.ShortTermBehavior != AiBehavior.EngageParty && daysUntilNoFood >= 0)
             {
                 float num = 0f;
                 float num2 = 0f;
@@ -147,15 +148,15 @@ namespace SurrenderTweaks
         }
 
         // Check whether Diplomacy is loaded.
-        public static void AddPrisonersAsCasualties(MobileParty defender, MobileParty attacker)
+        public static void AddPrisonersAsCasualties(MobileParty attacker, MobileParty defender)
         {
             int prisoners = defender.MemberRoster.TotalManCount;
             Type warExhaustionManager = AccessTools.TypeByName("WarExhaustionManager");
             object instance = AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null);
-            defender.MapFaction.GetStanceWith(attacker.MapFaction).Casualties1 += prisoners;
-            if (instance != null && defender.MapFaction.IsKingdomFaction && attacker.MapFaction.IsKingdomFaction)
+            attacker.MapFaction.GetStanceWith(defender.MapFaction).Casualties1 += prisoners;
+            if (instance != null && attacker.MapFaction.IsKingdomFaction && defender.MapFaction.IsKingdomFaction)
             {
-                AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion").Invoke(instance, new object[] { (Kingdom)defender.MapFaction, (Kingdom)attacker.MapFaction, prisoners });
+                AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion", new Type[] { typeof(Kingdom), typeof(Kingdom), typeof(int), typeof(int), typeof(TextObject), typeof(TextObject) }).Invoke(instance, new object[] { (Kingdom)attacker.MapFaction, (Kingdom)defender.MapFaction, 0, prisoners, attacker.Name, defender.Name });
             }
         }
     }
