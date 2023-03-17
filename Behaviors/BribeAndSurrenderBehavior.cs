@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -57,7 +58,7 @@ namespace SurrenderTweaks.Behaviors
                 }
                 defender.ItemRoster.Clear();
                 SurrenderHelper.AddPrisonersAsCasualties(attacker, defender);
-                foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
+                foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
                 {
                     if (!troopRosterElement.Character.IsHero)
                     {

@@ -172,7 +172,7 @@ namespace SurrenderTweaks.Behaviors
                             defender.ItemRoster.Clear();
                             SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
                         }
-                        foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
+                        foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
                         {
                             if (!troopRosterElement.Character.IsHero)
                             {
