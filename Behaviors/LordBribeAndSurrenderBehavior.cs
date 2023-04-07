@@ -2,6 +2,7 @@
 using SandBox.CampaignBehaviors;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Conversation;
@@ -44,9 +45,13 @@ namespace SurrenderTweaks.Behaviors
             {
                 dataStore.SyncData("_lordBribeCooldown", ref _bribeCooldown);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                InformationManager.DisplayMessage(new InformationMessage(ex.Message + "\r\n" + ex.StackTrace));
+                if (dataStore.IsLoading)
+                {
+                    MethodBase method = MethodBase.GetCurrentMethod();
+                    InformationManager.DisplayMessage(new InformationMessage(method.DeclaringType.FullName + "." + method.Name + ": Error loading save file!"));
+                }
             }
         }
 

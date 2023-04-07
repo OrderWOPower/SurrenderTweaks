@@ -37,9 +37,13 @@ namespace SurrenderTweaks.Behaviors
                 dataStore.SyncData("_isBribeFeasible", ref _isBribeFeasible);
                 dataStore.SyncData("_isSurrenderFeasible", ref _isSurrenderFeasible);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                InformationManager.DisplayMessage(new InformationMessage(ex.Message + "\r\n" + ex.StackTrace));
+                if (dataStore.IsLoading)
+                {
+                    MethodBase method = MethodBase.GetCurrentMethod();
+                    InformationManager.DisplayMessage(new InformationMessage(method.DeclaringType.FullName + "." + method.Name + ": Error loading save file!"));
+                }
             }
         }
 
