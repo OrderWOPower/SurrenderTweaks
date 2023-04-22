@@ -25,10 +25,10 @@ namespace SurrenderTweaks.Behaviors
     [HarmonyPatch(typeof(EncounterGameMenuBehavior), "game_menu_town_town_besiege_on_condition")]
     public class SettlementBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
-        private static Dictionary<Settlement, int> _bribeCooldown = new Dictionary<Settlement, int>();
-        private Dictionary<Settlement, int> _bribeCount = new Dictionary<Settlement, int>();
-        private Dictionary<Settlement, int> _surrenderCount = new Dictionary<Settlement, int>();
-        private Dictionary<Settlement, int> _starvationPenalty = new Dictionary<Settlement, int>();
+        private static Dictionary<Settlement, int> _bribeCooldown;
+        private Dictionary<Settlement, int> _bribeCount;
+        private Dictionary<Settlement, int> _surrenderCount;
+        private Dictionary<Settlement, int> _starvationPenalty;
 
         // If a settlement has a bribe cooldown, disable the option for besieging the settlement. Display the bribe cooldown's number of days in the option's tooltip.
         private static void Postfix(MenuCallbackArgs args)
@@ -41,6 +41,14 @@ namespace SurrenderTweaks.Behaviors
                 args.Tooltip = new TextObject("{=SurrenderTweaks09}You cannot attack this settlement for {SETTLEMENT_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
                 args.IsEnabled = false;
             }
+        }
+
+        public SettlementBribeAndSurrenderBehavior()
+        {
+            _bribeCooldown = new Dictionary<Settlement, int>();
+            _bribeCount = new Dictionary<Settlement, int>();
+            _surrenderCount = new Dictionary<Settlement, int>();
+            _starvationPenalty = new Dictionary<Settlement, int>();
         }
 
         public override void RegisterEvents()

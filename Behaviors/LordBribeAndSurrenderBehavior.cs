@@ -18,7 +18,7 @@ namespace SurrenderTweaks.Behaviors
     [HarmonyPatch(typeof(LordConversationsCampaignBehavior), "conversation_player_can_attack_hero_on_clickable_condition")]
     public class LordBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
-        private static Dictionary<MobileParty, int> _bribeCooldown = new Dictionary<MobileParty, int>();
+        private static Dictionary<MobileParty, int> _bribeCooldown;
 
         // If a party has a bribe cooldown, disable the option for attacking the party. Display the bribe cooldown's number of days in the option's tooltip.
         private static void Postfix(ref bool __result, ref TextObject hint)
@@ -32,6 +32,8 @@ namespace SurrenderTweaks.Behaviors
                 __result = false;
             }
         }
+
+        public LordBribeAndSurrenderBehavior() => _bribeCooldown = new Dictionary<MobileParty, int>();
 
         public override void RegisterEvents()
         {
