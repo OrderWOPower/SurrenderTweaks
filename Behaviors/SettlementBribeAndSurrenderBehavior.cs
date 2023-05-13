@@ -278,7 +278,7 @@ namespace SurrenderTweaks.Behaviors
         private void AcceptParley()
         {
             Campaign.Current.CurrentConversationContext = ConversationContext.Default;
-            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(PlayerSiege.BesiegedSettlement.MilitiaPartyComponent.Party.MemberRoster.GetCharacterAtIndex(0), PlayerSiege.BesiegedSettlement.MilitiaPartyComponent.Party, false, true, false, false));
+            CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(PlayerSiege.BesiegedSettlement.Culture.MeleeEliteMilitiaTroop, PlayerSiege.BesiegedSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         }
     }
 }
