@@ -19,8 +19,7 @@ namespace SurrenderTweaks.Behaviors
 {
     public class BribeAndSurrenderBehavior : CampaignBehaviorBase
     {
-        private bool _isBribeFeasible;
-        private bool _isSurrenderFeasible;
+        private bool _isBribeFeasible, _isSurrenderFeasible;
 
         public override void RegisterEvents()
         {
@@ -41,38 +40,46 @@ namespace SurrenderTweaks.Behaviors
             {
                 if (dataStore.IsLoading)
                 {
-                    MethodBase method = MethodBase.GetCurrentMethod();
-                    InformationManager.DisplayMessage(new InformationMessage(method.DeclaringType.FullName + "." + method.Name + ": Error loading save file!"));
+                    InformationManager.DisplayMessage(new InformationMessage(MethodBase.GetCurrentMethod().DeclaringType.FullName + "." + MethodBase.GetCurrentMethod().Name + ": Error loading save file!"));
                 }
             }
         }
 
         private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderEvent.PlayerSurrenderEvent.SetBribeOrSurrender(_isBribeFeasible, _isSurrenderFeasible);
 
-        // If a party is willing to offer a surrender to an AI attacker, capture the lord, capture all the troops in the party and capture all their trade items.
         private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
         {
-            MobileParty defender = defenderParty.MobileParty;
-            MobileParty attacker = attackerParty.MobileParty;
+            MobileParty defender = defenderParty.MobileParty, attacker = attackerParty.MobileParty;
+
             if (!mapEvent.IsPlayerMapEvent && SurrenderHelper.IsBribeOrSurrenderFeasible(defender, attacker, 0, 0, true))
             {
                 foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
                 {
+                    // Capture the trade items.
                     attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
                 }
+
                 defender.ItemRoster.Clear();
-                SurrenderHelper.AddPrisonersAsCasualties(attacker, defender);
+
+                if (!defender.IsBandit)
+                {
+                    SurrenderHelper.AddPrisonersAsCasualties(attacker, defender);
+                }
+
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
                 {
                     if (!troopRosterElement.Character.IsHero)
                     {
+                        // Capture the troops.
                         attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                     }
                     else
                     {
+                        // Capture the lords.
                         TakePrisonerAction.Apply(attackerParty, troopRosterElement.Character.HeroObject);
                     }
                 }
+
                 defender.MemberRoster.Clear();
             }
         }
@@ -80,10 +87,12 @@ namespace SurrenderTweaks.Behaviors
         private void OnSetupPreConversation()
         {
             SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
+
             if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
             {
                 surrenderEvent.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
             }
+
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
             _isSurrenderFeasible = surrenderEvent.IsSurrenderFeasible;
         }
@@ -91,10 +100,12 @@ namespace SurrenderTweaks.Behaviors
         private void OnTick(float dt)
         {
             SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
+
             if (MapEvent.PlayerMapEvent == null && PlayerSiege.PlayerSiegeEvent == null)
             {
                 surrenderEvent.SetBribeOrSurrender(null, null);
             }
+
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
             _isSurrenderFeasible = surrenderEvent.IsSurrenderFeasible;
         }

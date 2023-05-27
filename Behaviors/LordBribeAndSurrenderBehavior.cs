@@ -20,15 +20,18 @@ namespace SurrenderTweaks.Behaviors
     {
         private static Dictionary<MobileParty, int> _bribeCooldown;
 
-        // If a party has a bribe cooldown, disable the option for attacking the party. Display the bribe cooldown's number of days in the option's tooltip.
         private static void Postfix(ref bool __result, ref TextObject hint)
         {
             MobileParty conversationParty = MobileParty.ConversationParty;
+
             if (_bribeCooldown.ContainsKey(conversationParty) && conversationParty.BesiegedSettlement?.OwnerClan != Clan.PlayerClan)
             {
                 MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", _bribeCooldown[conversationParty]);
-                MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[conversationParty] > 1) ? 1 : 0);
+                MBTextManager.SetTextVariable("PLURAL", _bribeCooldown[conversationParty] > 1 ? 1 : 0);
+                // Display the bribe cooldown's number of days in the option's tooltip.
                 hint = new TextObject("{=SurrenderTweaks03}You cannot attack this party for {LORD_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+
+                // Disable the option for attacking the party.
                 __result = false;
             }
         }
@@ -51,31 +54,31 @@ namespace SurrenderTweaks.Behaviors
             {
                 if (dataStore.IsLoading)
                 {
-                    MethodBase method = MethodBase.GetCurrentMethod();
-                    InformationManager.DisplayMessage(new InformationMessage(method.DeclaringType.FullName + "." + method.Name + ": Error loading save file!"));
+                    InformationManager.DisplayMessage(new InformationMessage(MethodBase.GetCurrentMethod().DeclaringType.FullName + "." + MethodBase.GetCurrentMethod().Name + ": Error loading save file!"));
                 }
             }
         }
 
         private void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
 
-        // If a party has a bribe cooldown, decrease the bribe cooldown by 1 day.
-        // If a party's bribe cooldown is 0 days, remove its bribe cooldown.
         private void OnDailyTickParty(MobileParty mobileParty)
         {
             if (_bribeCooldown.ContainsKey(mobileParty))
             {
+                // If a party has a bribe cooldown, decrease the bribe cooldown by 1 day.
                 _bribeCooldown[mobileParty]--;
+
                 if (_bribeCooldown[mobileParty] <= 0)
                 {
+                    // If a party's bribe cooldown is 0 days, remove the bribe cooldown.
                     _bribeCooldown.Remove(mobileParty);
                 }
             }
         }
 
-        // Add dialog lines for a lord offering a bribe or surrender.
         private void AddDialogs(CampaignGameStarter starter)
         {
+            // Add dialog lines for a lord offering a bribe or surrender.
             starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "lord_do_bribe", "{=SurrenderTweaks04}I can pay you for my safe passage. Here is {MONEY}{GOLD_ICON}. Just take it and let me and my troops go.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_bribe_on_condition), null, 100, null);
             starter.AddDialogLine("", "party_encounter_lord_hostile_attacker_3", "close_window", "{=SurrenderTweaks07}I can't fight you. I yield. I am at your mercy.[if:idle_angry][ib:nervous]", new ConversationSentence.OnConditionDelegate(conversation_lord_surrender_on_condition), delegate
             {
@@ -93,39 +96,48 @@ namespace SurrenderTweaks.Behaviors
         private bool conversation_lord_bribe_on_condition()
         {
             MBTextManager.SetTextVariable("MONEY", SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null));
+
             return SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible && MobileParty.ConversationParty.MapEvent == null && MobileParty.ConversationParty.SiegeEvent == null;
         }
 
         private bool conversation_lord_surrender_on_condition() => SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible;
 
-        // If the player accepts a lord's bribe, transfer the bribe amount from the lord to the player. Add a bribe cooldown to the party and set it to 10 days.
         private void conversation_lord_bribe_on_consequence()
         {
+            // Transfer the bribe amount from the lord to the player.
             GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null), false);
+
+            // Add a bribe cooldown to the party.
             _bribeCooldown.Add(MobileParty.ConversationParty, SurrenderTweaksSettings.Instance.LordBribeCooldownDays);
+
             PlayerEncounter.LeaveEncounter = true;
         }
 
-        // If the player accepts a lord's surrender, capture the lord, capture all the troops in the party and capture all their trade items.
         private void conversation_lord_surrender_on_consequence()
         {
             PartyBase defender = PlayerEncounter.EncounteredParty;
             Dictionary<PartyBase, ItemRoster> dictionary = new Dictionary<PartyBase, ItemRoster>();
+            // Capture the trade items.
             ItemRoster value = new ItemRoster(defender.ItemRoster);
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+
             defender.ItemRoster.Clear();
             SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
+
             foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
             {
                 if (!troopRosterElement.Character.IsHero)
                 {
+                    // Capture the troops.
                     troopRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                 }
                 else
                 {
+                    // Capture the lords.
                     TakePrisonerAction.Apply(PartyBase.MainParty, troopRosterElement.Character.HeroObject);
                 }
             }
+
             DestroyPartyAction.Apply(PartyBase.MainParty, defender.MobileParty);
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);

@@ -18,11 +18,13 @@ namespace SurrenderTweaks
         public string SurrenderChance
         {
             get => _surrenderChance;
+
             set
             {
                 if (value != _surrenderChance)
                 {
                     _surrenderChance = value;
+
                     ViewModel?.OnPropertyChangedWithValue(value, "SurrenderChance");
                 }
             }
@@ -30,15 +32,17 @@ namespace SurrenderTweaks
 
         public SurrenderTweaksMixin(PowerLevelComparer powerLevelComparer) : base(powerLevelComparer) => MixinWeakReference = new WeakReference<SurrenderTweaksMixin>(this);
 
-        // Set the "Chance of Surrender" text depending on whether a bribe or a surrender is feasible.
         public void SetSurrenderChance()
         {
             SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
+
             SurrenderChance = null;
+
             if (surrenderEvent.IsBribeFeasible)
             {
                 SurrenderChance = new TextObject("{=SurrenderTweaks01}Chance of Surrender: High").ToString();
             }
+
             if (surrenderEvent.IsSurrenderFeasible)
             {
                 SurrenderChance = new TextObject("{=SurrenderTweaks02}Chance of Surrender: Very High").ToString();

@@ -26,19 +26,19 @@ namespace SurrenderTweaks.Behaviors
     public class SettlementBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
         private static Dictionary<Settlement, int> _bribeCooldown;
-        private Dictionary<Settlement, int> _bribeCount;
-        private Dictionary<Settlement, int> _surrenderCount;
-        private Dictionary<Settlement, int> _starvationPenalty;
+        private Dictionary<Settlement, int> _bribeCount, _surrenderCount, _starvationPenalty;
 
-        // If a settlement has a bribe cooldown, disable the option for besieging the settlement. Display the bribe cooldown's number of days in the option's tooltip.
         private static void Postfix(MenuCallbackArgs args)
         {
             Settlement currentSettlement = Settlement.CurrentSettlement;
+
             if (_bribeCooldown.ContainsKey(currentSettlement))
             {
                 MBTextManager.SetTextVariable("SETTLEMENT_BRIBE_COOLDOWN", _bribeCooldown[currentSettlement]);
-                MBTextManager.SetTextVariable("PLURAL", (_bribeCooldown[currentSettlement] > 1) ? 1 : 0);
+                MBTextManager.SetTextVariable("PLURAL", _bribeCooldown[currentSettlement] > 1 ? 1 : 0);
+                // Display the bribe cooldown's number of days in the option's tooltip.
                 args.Tooltip = new TextObject("{=SurrenderTweaks09}You cannot attack this settlement for {SETTLEMENT_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
+                // Disable the option for besieging the settlement.
                 args.IsEnabled = false;
             }
         }
@@ -73,28 +73,30 @@ namespace SurrenderTweaks.Behaviors
             {
                 if (dataStore.IsLoading)
                 {
-                    MethodBase method = MethodBase.GetCurrentMethod();
-                    InformationManager.DisplayMessage(new InformationMessage(method.DeclaringType.FullName + "." + method.Name + ": Error loading save file!"));
+                    InformationManager.DisplayMessage(new InformationMessage(MethodBase.GetCurrentMethod().DeclaringType.FullName + "." + MethodBase.GetCurrentMethod().Name + ": Error loading save file!"));
                 }
             }
         }
 
         public void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
 
-        // Add a starvation penalty to the besieged settlement.
         public void OnSiegeStarted(SiegeEvent siegeEvent)
         {
             Settlement settlement = siegeEvent.BesiegedSettlement;
+
             if (!_bribeCount.ContainsKey(settlement))
             {
                 _bribeCount.Add(settlement, 0);
             }
+
             if (!_surrenderCount.ContainsKey(settlement))
             {
                 _surrenderCount.Add(settlement, 0);
             }
+
             if (!_starvationPenalty.ContainsKey(settlement))
             {
+                // Add a starvation penalty to the besieged settlement.
                 _starvationPenalty.Add(settlement, 0);
             }
         }
@@ -110,19 +112,20 @@ namespace SurrenderTweaks.Behaviors
             }
         }
 
-        // If a settlement has a bribe cooldown, decrease the bribe cooldown by 1 day.
-        // If a settlement's bribe cooldown is 0 days, remove its bribe cooldown.
-        // If a settlement is no longer under siege, remove its starvation penalty.
         public void OnDailyTickSettlement(Settlement settlement)
         {
             if (_bribeCooldown.ContainsKey(settlement))
             {
+                // If a settlement has a bribe cooldown, decrease the bribe cooldown by 1 day.
                 _bribeCooldown[settlement]--;
+
                 if (_bribeCooldown[settlement] <= 0)
                 {
+                    // If a settlement's bribe cooldown is 0 days, remove the bribe cooldown.
                     _bribeCooldown.Remove(settlement);
                 }
             }
+
             if (settlement.SiegeEvent == null)
             {
                 if (!_bribeCooldown.ContainsKey(settlement))
@@ -130,36 +133,39 @@ namespace SurrenderTweaks.Behaviors
                     _bribeCount.Remove(settlement);
                     _surrenderCount.Remove(settlement);
                 }
+
+                // If a settlement is no longer under siege, remove its starvation penalty.
                 _starvationPenalty.Remove(settlement);
             }
         }
 
-        // If a settlement has no food, increase its starvation penalty.
-        // If the settlement is willing to offer a bribe or surrender to the player, make them request a parley with the player.
-        // If the settlement is willing to offer a surrender to an AI attacker, capture the lords, capture all the troops in the settlement and capture all their trade items which do not belong to the settlement.
-        // Capture the settlement.
         public void OnHourlyTickSettlement(Settlement settlement)
         {
             if (settlement.SiegeEvent != null && _bribeCount.ContainsKey(settlement) && _surrenderCount.ContainsKey(settlement) && _starvationPenalty.ContainsKey(settlement))
             {
-                float foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
-                ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
-                int daysUntilNoFood = MathF.Ceiling(MathF.Abs((townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2) / foodChange));
                 MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
                 SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
+                ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
+                float totalFood = townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2, foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
+                int daysUntilNoFood = MathF.Ceiling(MathF.Abs(totalFood / foodChange));
+
                 if (!SettlementHelper.IsGarrisonStarving(settlement))
                 {
                     _starvationPenalty[settlement] = 0;
                 }
                 else
                 {
+                    // If a settlement has no food, increase its starvation penalty.
                     _starvationPenalty[settlement] += 4;
                 }
+
                 if (attacker.IsMainParty)
                 {
                     surrenderEvent.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement]);
+
                     if (!InformationManager.IsAnyInquiryActive())
                     {
+                        // If the settlement is willing to offer a bribe or surrender to the player, make them request a parley with the player.
                         if (surrenderEvent.IsBribeFeasible && !surrenderEvent.IsSurrenderFeasible && _bribeCount[settlement] == 0)
                         {
                             RequestParley();
@@ -180,32 +186,40 @@ namespace SurrenderTweaks.Behaviors
                         {
                             foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
                             {
+                                // Capture the trade items which do not belong to the settlement.
                                 attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
                             }
+
                             defender.ItemRoster.Clear();
                             SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
                         }
+
                         foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
                         {
                             if (!troopRosterElement.Character.IsHero)
                             {
+                                // Capture the troops.
                                 attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                             }
                             else
                             {
+                                // Capture the lords.
                                 TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
                             }
                         }
+
                         defender.MemberRoster.Clear();
                     }
+
+                    // Capture the settlement.
                     settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                 }
             }
         }
 
-        // Add dialog lines for a settlement offering a bribe or surrender.
         private void AddDialogs(CampaignGameStarter starter)
         {
+            // Add dialog lines for a settlement offering a bribe or surrender.
             starter.AddDialogLine("", "start", "settlement_do_bribe", "{=SurrenderTweaks10}We are low on food. There is no need to starve us. We can pay you to end the siege. Here is {MONEY}{GOLD_ICON}. Just take it and have mercy on us.", new ConversationSentence.OnConditionDelegate(conversation_settlement_bribe_on_condition), null, 100, null);
             starter.AddPlayerLine("", "settlement_do_bribe", "close_window", "{=SurrenderTweaks11}I will have mercy on you for now. You have escaped doom, but not for long.", null, new ConversationSentence.OnConsequenceDelegate(conversation_settlement_bribe_on_consequence), 100, null, null);
             starter.AddPlayerLine("", "settlement_do_bribe", "close_window", "{=SurrenderTweaks12}What a joke! You will stop starving when this settlement falls... or when you fall.", null, null, 100, null, null);
@@ -218,53 +232,64 @@ namespace SurrenderTweaks.Behaviors
         private bool conversation_settlement_bribe_on_condition()
         {
             MBTextManager.SetTextVariable("MONEY", SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement));
+
             return SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible && !SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
         }
 
         private bool conversation_settlement_surrender_on_condition() => SurrenderEvent.PlayerSurrenderEvent.IsSurrenderFeasible && MobileParty.ConversationParty != null && MobileParty.ConversationParty.IsMilitia;
 
-        // If the player accepts a settlement's bribe, transfer the bribe amount from the settlement to the player and break the siege. Add a bribe cooldown to the settlement and set it to 10 days.
         private void conversation_settlement_bribe_on_consequence()
         {
+            // Transfer the bribe amount from the settlement to the player.
             GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement), false);
+
+            // Add a bribe cooldown to the settlement.
             _bribeCooldown.Add(PlayerSiege.BesiegedSettlement, SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays);
+
+            // Break the siege.
             AccessTools.Method(typeof(SiegeEventCampaignBehavior), "LeaveSiege").Invoke(null, null);
         }
 
-        // If the player accepts a settlement's surrender, capture the lords, capture all the troops in the settlement and capture all their trade items which do not belong to the settlement.
-        // Capture the settlement.
         private void conversation_settlement_surrender_on_consequence()
         {
             Dictionary<PartyBase, ItemRoster> dictionary = new Dictionary<PartyBase, ItemRoster>();
             ItemRoster value = new ItemRoster();
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+
             foreach (PartyBase defender in PlayerSiege.BesiegedSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
             {
                 if (defender != PlayerSiege.BesiegedSettlement.Party)
                 {
+                    // Capture the trade items which do not belong to the settlement.
                     value.Add(defender.ItemRoster);
                     defender.ItemRoster.Clear();
                     SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
                 }
+
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {
                     if (!troopRosterElement.Character.IsHero)
                     {
+                        // Capture the troops.
                         troopRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
                     }
                     else
                     {
+                        // Capture the lords.
                         TakePrisonerAction.Apply(PartyBase.MainParty, troopRosterElement.Character.HeroObject);
                     }
                 }
+
                 if (defender.MobileParty != null)
                 {
                     DestroyPartyAction.Apply(PartyBase.MainParty, defender.MobileParty);
                 }
             }
+
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);
             PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerSiege.BesiegedSettlement.Party.Name, troopRoster.TotalManCount, null);
+            // Capture the settlement.
             PlayerEncounter.Init();
             PlayerEncounter.Current.SetupFields(PartyBase.MainParty, PlayerSiege.BesiegedSettlement.Party);
             PlayerEncounter.StartBattle();
@@ -274,10 +299,10 @@ namespace SurrenderTweaks.Behaviors
         // When the settlement requests a parley with the player, display a popup message.
         private void RequestParley() => InformationManager.ShowInquiry(new InquiryData(new TextObject("{=SurrenderTweaks14}Defenders request to parley").ToString(), new TextObject("{=SurrenderTweaks15}The defenders sound a horn and open the gates. A messenger rides out towards your camp and requests to parley.").ToString(), true, false, new TextObject("{=SurrenderTweaks16}OK", null).ToString(), "", new Action(AcceptParley), null, ""), true);
 
-        // When the player accepts a parley, start a conversation with the settlement defenders.
         private void AcceptParley()
         {
             Campaign.Current.CurrentConversationContext = ConversationContext.Default;
+            // When the player accepts a parley, start a conversation with the settlement defenders.
             CampaignMapConversation.OpenConversation(new ConversationCharacterData(CharacterObject.PlayerCharacter, null, true, true, false, false), new ConversationCharacterData(PlayerSiege.BesiegedSettlement.Culture.MeleeEliteMilitiaTroop, PlayerSiege.BesiegedSettlement.MilitiaPartyComponent.Party, false, true, false, false));
         }
     }

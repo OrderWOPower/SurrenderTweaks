@@ -15,25 +15,27 @@ namespace SurrenderTweaks
     {
         protected override void OnSubModuleLoad()
         {
-            new Harmony("mod.bannerlord.surrendertweaks").PatchAll();
             UIExtender uiExtender = new UIExtender("SurrenderTweaks");
+
             uiExtender.Register(typeof(SurrenderTweaksSubModule).Assembly);
             uiExtender.Enable();
+            new Harmony("mod.bannerlord.surrendertweaks").PatchAll();
         }
 
-        protected override void OnGameStart(Game game, IGameStarter gameStarter)
+        protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
             if (game.GameType is Campaign)
             {
-                CampaignGameStarter campaignStarter = (CampaignGameStarter)gameStarter;
-                campaignStarter.AddBehavior(new BribeAndSurrenderBehavior());
-                campaignStarter.AddBehavior(new LordBribeAndSurrenderBehavior());
-                campaignStarter.AddBehavior(new SettlementBribeAndSurrenderBehavior());
-                ScreenManager.OnPushScreen += OnPushScreen;
+                CampaignGameStarter campaignGameStarter = (CampaignGameStarter)gameStarterObject;
+
+                campaignGameStarter.AddBehavior(new BribeAndSurrenderBehavior());
+                campaignGameStarter.AddBehavior(new LordBribeAndSurrenderBehavior());
+                campaignGameStarter.AddBehavior(new SettlementBribeAndSurrenderBehavior());
+                ScreenManager.OnPushScreen += OnScreenManagerPushScreen;
             }
         }
 
-        public void OnPushScreen(ScreenBase pushedScreen)
+        public void OnScreenManagerPushScreen(ScreenBase pushedScreen)
         {
             if (pushedScreen is MapScreen mapScreen)
             {
