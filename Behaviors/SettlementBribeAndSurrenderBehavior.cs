@@ -26,6 +26,7 @@ namespace SurrenderTweaks.Behaviors
     public class SettlementBribeAndSurrenderBehavior : CampaignBehaviorBase
     {
         private static Dictionary<Settlement, int> _bribeCooldown;
+
         private Dictionary<Settlement, int> _bribeCount, _surrenderCount, _starvationPenalty;
 
         private static void Postfix(MenuCallbackArgs args)
