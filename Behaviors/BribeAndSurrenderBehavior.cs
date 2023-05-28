@@ -12,7 +12,6 @@ using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Siege;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 
 namespace SurrenderTweaks.Behaviors
@@ -53,12 +52,8 @@ namespace SurrenderTweaks.Behaviors
 
             if (!mapEvent.IsPlayerMapEvent && SurrenderHelper.IsBribeOrSurrenderFeasible(defender, attacker, 0, 0, true))
             {
-                foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
-                {
-                    // Capture the trade items.
-                    attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
-                }
-
+                // Capture the trade items.
+                attacker.ItemRoster.Add(defender.ItemRoster);
                 defender.ItemRoster.Clear();
 
                 if (!defender.IsBandit)

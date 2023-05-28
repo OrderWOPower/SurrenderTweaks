@@ -16,7 +16,6 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Siege;
-using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -185,12 +184,8 @@ namespace SurrenderTweaks.Behaviors
                     {
                         if (defender != settlement.Party)
                         {
-                            foreach (ItemRosterElement itemRosterElement in defender.ItemRoster)
-                            {
-                                // Capture the trade items which do not belong to the settlement.
-                                attacker.ItemRoster.AddToCounts(itemRosterElement.EquipmentElement, itemRosterElement.Amount);
-                            }
-
+                            // Capture the trade items which do not belong to the settlement.
+                            attacker.ItemRoster.Add(defender.ItemRoster);
                             defender.ItemRoster.Clear();
                             SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
                         }
@@ -253,13 +248,14 @@ namespace SurrenderTweaks.Behaviors
 
         private void conversation_settlement_surrender_on_consequence()
         {
+            Settlement settlement = PlayerSiege.BesiegedSettlement;
             Dictionary<PartyBase, ItemRoster> dictionary = new Dictionary<PartyBase, ItemRoster>();
             ItemRoster value = new ItemRoster();
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 
-            foreach (PartyBase defender in PlayerSiege.BesiegedSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
+            foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
             {
-                if (defender != PlayerSiege.BesiegedSettlement.Party)
+                if (defender != settlement.Party)
                 {
                     // Capture the trade items which do not belong to the settlement.
                     value.Add(defender.ItemRoster);
@@ -289,10 +285,10 @@ namespace SurrenderTweaks.Behaviors
 
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);
-            PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, PlayerSiege.BesiegedSettlement.Party.Name, troopRoster.TotalManCount, null);
+            PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, settlement.Party.Name, troopRoster.TotalManCount, null);
             // Capture the settlement.
             PlayerEncounter.Init();
-            PlayerEncounter.Current.SetupFields(PartyBase.MainParty, PlayerSiege.BesiegedSettlement.Party);
+            PlayerEncounter.Current.SetupFields(PartyBase.MainParty, settlement.Party);
             PlayerEncounter.StartBattle();
             PlayerEncounter.Update();
         }

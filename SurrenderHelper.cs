@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -102,6 +103,7 @@ namespace SurrenderTweaks
         public static int GetBribeAmount(MobileParty conversationParty, Settlement defenderSettlement)
         {
             int num = 0, num2 = 0;
+            ValuationModel valuationModel = Campaign.Current.Models.ValuationModel;
             SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
 
             if (conversationParty != null)
@@ -110,11 +112,11 @@ namespace SurrenderTweaks
                 {
                     if (conversationParty.LeaderHero != null)
                     {
-                        num += (int)(2f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(conversationParty));
+                        num += (int)(2f * valuationModel.GetMilitaryValueOfParty(conversationParty));
 
                         foreach (TroopRosterElement troopRosterElement in conversationParty.MemberRoster.GetTroopRoster().Where(e => e.Character.IsHero))
                         {
-                            num += (int)(0.2f * Campaign.Current.Models.ValuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
+                            num += (int)(0.2f * valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
                         }
 
                         // For lord parties, calculate the bribe amount based on the total barter value of the lords and the troops in the party.
@@ -127,11 +129,11 @@ namespace SurrenderTweaks
                     {
                         foreach (PartyBase defenderParty in defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(p => p.MobileParty != null))
                         {
-                            num += (int)(2f * Campaign.Current.Models.ValuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
+                            num += (int)(2f * valuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
 
                             foreach (TroopRosterElement troopRosterElement in defenderParty.MemberRoster.GetTroopRoster().Where(e => e.Character.IsHero))
                             {
-                                num += (int)(0.2f * Campaign.Current.Models.ValuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
+                                num += (int)(0.2f * valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
                             }
                         }
 
@@ -147,9 +149,9 @@ namespace SurrenderTweaks
 
         public static void AddPrisonersAsCasualties(MobileParty attacker, MobileParty defender)
         {
-            int prisonerCount = defender.MemberRoster.TotalManCount;
             Type warExhaustionManager = AccessTools.TypeByName("WarExhaustionManager");
             object instance = AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null);
+            int prisonerCount = defender.MemberRoster.TotalManCount;
 
             attacker.MapFaction.GetStanceWith(defender.MapFaction).Casualties1 += prisonerCount;
 
