@@ -137,18 +137,75 @@ namespace SurrenderTweaks.Behaviors
                 // If a settlement is no longer under siege, remove its starvation penalty.
                 _starvationPenalty.Remove(settlement);
             }
+            else
+            {
+                if (_bribeCount.ContainsKey(settlement) && _surrenderCount.ContainsKey(settlement) && _starvationPenalty.ContainsKey(settlement))
+                {
+                    MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
+                    SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
+                    ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
+                    float totalFood = townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2, foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
+                    int daysUntilNoFood = MathF.Ceiling(MathF.Abs(totalFood / foodChange));
+
+                    if (attacker.IsMainParty)
+                    {
+                        surrenderEvent.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement]);
+
+                        if (!InformationManager.IsAnyInquiryActive())
+                        {
+                            // If the settlement is willing to offer a bribe or surrender to the player, make them request a parley with the player.
+                            if (surrenderEvent.IsBribeFeasible && !surrenderEvent.IsSurrenderFeasible && _bribeCount[settlement] == 0)
+                            {
+                                RequestParley();
+                                _bribeCount[settlement]++;
+                            }
+                            else if (surrenderEvent.IsSurrenderFeasible && _surrenderCount[settlement] == 0)
+                            {
+                                RequestParley();
+                                _surrenderCount[settlement]++;
+                            }
+                        }
+                    }
+                    else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
+                    {
+                        foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
+                        {
+                            if (defender != settlement.Party)
+                            {
+                                // Capture the trade items which do not belong to the settlement.
+                                attacker.ItemRoster.Add(defender.ItemRoster);
+                                defender.ItemRoster.Clear();
+                                SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
+                            }
+
+                            foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
+                            {
+                                if (!troopRosterElement.Character.IsHero)
+                                {
+                                    // Capture the troops.
+                                    attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
+                                }
+                                else
+                                {
+                                    // Capture the lords.
+                                    TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
+                                }
+                            }
+
+                            defender.MemberRoster.Clear();
+                        }
+
+                        // Capture the settlement.
+                        settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
+                    }
+                }
+            }
         }
 
         public void OnHourlyTickSettlement(Settlement settlement)
         {
-            if (settlement.SiegeEvent != null && _bribeCount.ContainsKey(settlement) && _surrenderCount.ContainsKey(settlement) && _starvationPenalty.ContainsKey(settlement))
+            if (settlement.SiegeEvent != null && _starvationPenalty.ContainsKey(settlement))
             {
-                MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
-                SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
-                ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
-                float totalFood = townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2, foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
-                int daysUntilNoFood = MathF.Ceiling(MathF.Abs(totalFood / foodChange));
-
                 if (!SettlementHelper.IsGarrisonStarving(settlement))
                 {
                     _starvationPenalty[settlement] = 0;
@@ -157,58 +214,6 @@ namespace SurrenderTweaks.Behaviors
                 {
                     // If a settlement has no food, increase its starvation penalty.
                     _starvationPenalty[settlement] += 4;
-                }
-
-                if (attacker.IsMainParty)
-                {
-                    surrenderEvent.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement]);
-
-                    if (!InformationManager.IsAnyInquiryActive())
-                    {
-                        // If the settlement is willing to offer a bribe or surrender to the player, make them request a parley with the player.
-                        if (surrenderEvent.IsBribeFeasible && !surrenderEvent.IsSurrenderFeasible && _bribeCount[settlement] == 0)
-                        {
-                            RequestParley();
-                            _bribeCount[settlement]++;
-                        }
-                        else if (surrenderEvent.IsSurrenderFeasible && _surrenderCount[settlement] == 0)
-                        {
-                            RequestParley();
-                            _surrenderCount[settlement]++;
-                        }
-                    }
-                }
-                else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalty[settlement], true))
-                {
-                    foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
-                    {
-                        if (defender != settlement.Party)
-                        {
-                            // Capture the trade items which do not belong to the settlement.
-                            attacker.ItemRoster.Add(defender.ItemRoster);
-                            defender.ItemRoster.Clear();
-                            SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
-                        }
-
-                        foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
-                        {
-                            if (!troopRosterElement.Character.IsHero)
-                            {
-                                // Capture the troops.
-                                attacker.PrisonRoster.AddToCounts(troopRosterElement.Character, troopRosterElement.Number, false, 0, 0, true, -1);
-                            }
-                            else
-                            {
-                                // Capture the lords.
-                                TakePrisonerAction.Apply(attacker.Party, troopRosterElement.Character.HeroObject);
-                            }
-                        }
-
-                        defender.MemberRoster.Clear();
-                    }
-
-                    // Capture the settlement.
-                    settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                 }
             }
         }
