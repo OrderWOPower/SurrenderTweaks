@@ -137,7 +137,7 @@ namespace SurrenderTweaks
                             }
                         }
 
-                        num += (int)defenderSettlement.Prosperity * 6;
+                        num += (int)defenderSettlement.Town.Prosperity * 6;
                         // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the prosperity of the settlement.
                         num2 = MathF.Min((int)(num * settings.BribeAmountMultiplier), defenderSettlement.Town.Gold);
                     }

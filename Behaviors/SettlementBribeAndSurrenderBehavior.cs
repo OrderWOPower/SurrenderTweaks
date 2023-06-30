@@ -141,7 +141,7 @@ namespace SurrenderTweaks.Behaviors
             {
                 if (_bribeCount.ContainsKey(settlement) && _surrenderCount.ContainsKey(settlement) && _starvationPenalty.ContainsKey(settlement))
                 {
-                    MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.BesiegerParty;
+                    MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.LeaderParty;
                     SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
                     ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
                     float totalFood = townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2, foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
