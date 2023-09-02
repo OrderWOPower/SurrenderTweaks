@@ -39,7 +39,7 @@ namespace SurrenderTweaks
         {
             if (pushedScreen is MapScreen mapScreen)
             {
-                mapScreen.AddMapView<SurrenderTweaksView>(Array.Empty<object>());
+                mapScreen.AddMapView<SurrenderTweaksView>();
             }
         }
     }
