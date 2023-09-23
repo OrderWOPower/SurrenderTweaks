@@ -2,7 +2,6 @@
 using HarmonyLib;
 using SandBox.View.Map;
 using SurrenderTweaks.Behaviors;
-using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
@@ -28,9 +27,9 @@ namespace SurrenderTweaks
             {
                 CampaignGameStarter campaignGameStarter = (CampaignGameStarter)gameStarterObject;
 
-                campaignGameStarter.AddBehavior(new BribeAndSurrenderBehavior());
-                campaignGameStarter.AddBehavior(new LordBribeAndSurrenderBehavior());
-                campaignGameStarter.AddBehavior(new SettlementBribeAndSurrenderBehavior());
+                campaignGameStarter.AddBehavior(new SurrenderCampaignBehavior());
+                campaignGameStarter.AddBehavior(new LordSurrenderCampaignBehavior());
+                campaignGameStarter.AddBehavior(new SettlementSurrenderCampaignBehavior());
                 ScreenManager.OnPushScreen += OnScreenManagerPushScreen;
             }
         }

@@ -80,9 +80,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Behaviors\BribeAndSurrenderBehavior.cs" />
-    <Compile Include="Behaviors\LordBribeAndSurrenderBehavior.cs" />
-    <Compile Include="Behaviors\SettlementBribeAndSurrenderBehavior.cs" />
+    <Compile Include="Behaviors\SurrenderCampaignBehavior.cs" />
+    <Compile Include="Behaviors\LordSurrenderCampaignBehavior.cs" />
+    <Compile Include="Behaviors\SettlementSurrenderCampaignBehavior.cs" />
     <Compile Include="SurrenderEvent.cs" />
     <Compile Include="SurrenderHelper.cs" />
     <Compile Include="SurrenderTweaksMixin.cs" />
