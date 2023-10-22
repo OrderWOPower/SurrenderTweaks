@@ -69,12 +69,9 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnDailyTick()
         {
-            foreach (KeyValuePair<MobileParty, CampaignTime> keyValuePair in _bribeCooldowns.ToList())
+            foreach (KeyValuePair<MobileParty, CampaignTime> keyValuePair in _bribeCooldowns.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays))
             {
-                if ((CampaignTime.Now - keyValuePair.Value).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays)
-                {
-                    _bribeCooldowns.Remove(keyValuePair.Key);
-                }
+                _bribeCooldowns.Remove(keyValuePair.Key);
             }
         }
 
