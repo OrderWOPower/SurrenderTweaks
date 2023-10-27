@@ -19,20 +19,18 @@ namespace SurrenderTweaks.Behaviors
     [HarmonyPatch(typeof(LordConversationsCampaignBehavior), "conversation_player_can_attack_hero_on_clickable_condition")]
     public class LordSurrenderCampaignBehavior : CampaignBehaviorBase
     {
-        private static Dictionary<MobileParty, CampaignTime> _bribeCooldowns;
+        private static Dictionary<MobileParty, CampaignTime> _bribeTimes;
 
         private static void Postfix(ref bool __result, ref TextObject hint)
         {
-            MobileParty conversationParty = MobileParty.ConversationParty;
-
-            if (_bribeCooldowns.ContainsKey(conversationParty) && conversationParty.BesiegedSettlement?.OwnerClan != Clan.PlayerClan)
+            if (_bribeTimes.TryGetValue(MobileParty.ConversationParty, out CampaignTime bribeTime) && MobileParty.ConversationParty.BesiegedSettlement?.OwnerClan != Clan.PlayerClan)
             {
-                int bribeCooldown = SurrenderTweaksSettings.Instance.LordBribeCooldownDays - (int)(CampaignTime.Now - _bribeCooldowns[conversationParty]).ToDays;
+                int cooldownDays = SurrenderTweaksSettings.Instance.LordBribeCooldownDays - (int)(CampaignTime.Now - bribeTime).ToDays;
 
-                if (bribeCooldown > 0)
+                if (cooldownDays > 0)
                 {
-                    MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", bribeCooldown);
-                    MBTextManager.SetTextVariable("PLURAL", bribeCooldown > 1 ? 1 : 0);
+                    MBTextManager.SetTextVariable("LORD_BRIBE_COOLDOWN", cooldownDays);
+                    MBTextManager.SetTextVariable("PLURAL", cooldownDays > 1 ? 1 : 0);
                     // Display the bribe cooldown's number of days in the option's tooltip.
                     hint = new TextObject("{=SurrenderTweaks03}You cannot attack this party for {LORD_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
 
@@ -42,7 +40,7 @@ namespace SurrenderTweaks.Behaviors
             }
         }
 
-        public LordSurrenderCampaignBehavior() => _bribeCooldowns = new Dictionary<MobileParty, CampaignTime>();
+        public LordSurrenderCampaignBehavior() => _bribeTimes = new Dictionary<MobileParty, CampaignTime>();
 
         public override void RegisterEvents()
         {
@@ -54,7 +52,7 @@ namespace SurrenderTweaks.Behaviors
         {
             try
             {
-                dataStore.SyncData("_lordBribeCooldowns", ref _bribeCooldowns);
+                dataStore.SyncData("_lordBribeTimes", ref _bribeTimes);
             }
             catch (Exception)
             {
@@ -69,9 +67,9 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnDailyTick()
         {
-            foreach (KeyValuePair<MobileParty, CampaignTime> keyValuePair in _bribeCooldowns.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays))
+            foreach (KeyValuePair<MobileParty, CampaignTime> keyValuePair in _bribeTimes.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays))
             {
-                _bribeCooldowns.Remove(keyValuePair.Key);
+                _bribeTimes.Remove(keyValuePair.Key);
             }
         }
 
@@ -107,7 +105,7 @@ namespace SurrenderTweaks.Behaviors
             GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null), false);
 
             // Add a bribe cooldown to the party.
-            _bribeCooldowns.Add(MobileParty.ConversationParty, CampaignTime.Now);
+            _bribeTimes.Add(MobileParty.ConversationParty, CampaignTime.Now);
 
             PlayerEncounter.LeaveEncounter = true;
         }

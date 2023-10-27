@@ -24,22 +24,20 @@ namespace SurrenderTweaks.Behaviors
     [HarmonyPatch(typeof(EncounterGameMenuBehavior), "game_menu_town_town_besiege_on_condition")]
     public class SettlementSurrenderCampaignBehavior : CampaignBehaviorBase
     {
-        private static Dictionary<Settlement, CampaignTime> _bribeCooldowns;
+        private static Dictionary<Settlement, CampaignTime> _bribeTimes;
 
-        private Dictionary<Settlement, int> _bribeCounts, _surrenderCounts, _starvationPenalties;
+        private Dictionary<Settlement, int> _starvationPenalties, _parleyCounts;
 
         private static void Postfix(MenuCallbackArgs args)
         {
-            Settlement currentSettlement = Settlement.CurrentSettlement;
-
-            if (_bribeCooldowns.ContainsKey(currentSettlement))
+            if (_bribeTimes.TryGetValue(Settlement.CurrentSettlement, out CampaignTime bribeTime))
             {
-                int bribeCooldown = SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays - (int)(CampaignTime.Now - _bribeCooldowns[currentSettlement]).ToDays;
+                int cooldownDays = SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays - (int)(CampaignTime.Now - bribeTime).ToDays;
 
-                if (bribeCooldown > 0)
+                if (cooldownDays > 0)
                 {
-                    MBTextManager.SetTextVariable("SETTLEMENT_BRIBE_COOLDOWN", bribeCooldown);
-                    MBTextManager.SetTextVariable("PLURAL", bribeCooldown > 1 ? 1 : 0);
+                    MBTextManager.SetTextVariable("SETTLEMENT_BRIBE_COOLDOWN", cooldownDays);
+                    MBTextManager.SetTextVariable("PLURAL", cooldownDays > 1 ? 1 : 0);
                     // Display the bribe cooldown's number of days in the option's tooltip.
                     args.Tooltip = new TextObject("{=SurrenderTweaks09}You cannot attack this settlement for {SETTLEMENT_BRIBE_COOLDOWN} {?PLURAL}days{?}day{\\?}.", null);
                     // Disable the option for besieging the settlement.
@@ -50,10 +48,9 @@ namespace SurrenderTweaks.Behaviors
 
         public SettlementSurrenderCampaignBehavior()
         {
-            _bribeCooldowns = new Dictionary<Settlement, CampaignTime>();
-            _bribeCounts = new Dictionary<Settlement, int>();
-            _surrenderCounts = new Dictionary<Settlement, int>();
+            _bribeTimes = new Dictionary<Settlement, CampaignTime>();
             _starvationPenalties = new Dictionary<Settlement, int>();
+            _parleyCounts = new Dictionary<Settlement, int>();
         }
 
         public override void RegisterEvents()
@@ -62,18 +59,16 @@ namespace SurrenderTweaks.Behaviors
             CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeStarted));
             CampaignEvents.SiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(OnSiegeCompleted));
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
-            CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, new Action<Settlement>(OnDailyTickSettlement));
-            CampaignEvents.HourlyTickSettlementEvent.AddNonSerializedListener(this, new Action<Settlement>(OnHourlyTickSettlement));
+            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, new Action(OnHourlyTick));
         }
 
         public override void SyncData(IDataStore dataStore)
         {
             try
             {
-                dataStore.SyncData("_settlementBribeCooldowns", ref _bribeCooldowns);
-                dataStore.SyncData("_bribeCounts", ref _bribeCounts);
-                dataStore.SyncData("_surrenderCounts", ref _surrenderCounts);
+                dataStore.SyncData("_settlementBribeTimes", ref _bribeTimes);
                 dataStore.SyncData("_starvationPenalties", ref _starvationPenalties);
+                dataStore.SyncData("_parleyCounts", ref _parleyCounts);
             }
             catch (Exception)
             {
@@ -90,20 +85,11 @@ namespace SurrenderTweaks.Behaviors
         {
             Settlement settlement = siegeEvent.BesiegedSettlement;
 
-            if (!_bribeCounts.ContainsKey(settlement))
-            {
-                _bribeCounts.Add(settlement, 0);
-            }
-
-            if (!_surrenderCounts.ContainsKey(settlement))
-            {
-                _surrenderCounts.Add(settlement, 0);
-            }
-
-            if (!_starvationPenalties.ContainsKey(settlement))
+            if (!_starvationPenalties.TryGetValue(settlement, out _))
             {
                 // Add a starvation penalty to the besieged settlement.
                 _starvationPenalties.Add(settlement, 0);
+                _parleyCounts.Add(settlement, 0);
             }
         }
 
@@ -111,43 +97,44 @@ namespace SurrenderTweaks.Behaviors
         {
             if (isWin)
             {
-                _bribeCooldowns.Remove(settlement);
-                _bribeCounts.Remove(settlement);
-                _surrenderCounts.Remove(settlement);
+                _bribeTimes.Remove(settlement);
                 _starvationPenalties.Remove(settlement);
+                _parleyCounts.Remove(settlement);
             }
         }
 
         private void OnDailyTick()
         {
-            foreach (KeyValuePair<Settlement, CampaignTime> keyValuePair in _bribeCooldowns.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays))
+            foreach (KeyValuePair<Settlement, CampaignTime> keyValuePair in _bribeTimes.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays))
             {
-                _bribeCooldowns.Remove(keyValuePair.Key);
+                _bribeTimes.Remove(keyValuePair.Key);
+            }
+
+            foreach (KeyValuePair<Settlement, int> keyValuePair in _starvationPenalties.ToList().Where(p => !p.Key.IsUnderSiege && p.Value <= 0))
+            {
+                // If a settlement is no longer under siege, remove its starvation penalty.
+                _starvationPenalties.Remove(keyValuePair.Key);
+                _parleyCounts.Remove(keyValuePair.Key);
             }
         }
 
-        private void OnDailyTickSettlement(Settlement settlement)
+        private void OnHourlyTick()
         {
-            if (settlement.SiegeEvent == null)
+            foreach (Settlement settlement in _starvationPenalties.Keys.ToList())
             {
-                if (!_bribeCooldowns.ContainsKey(settlement))
-                {
-                    _bribeCounts.Remove(settlement);
-                    _surrenderCounts.Remove(settlement);
-                }
-
-                // If a settlement is no longer under siege, remove its starvation penalty.
-                _starvationPenalties.Remove(settlement);
-            }
-            else
-            {
-                if (_bribeCounts.ContainsKey(settlement) && _surrenderCounts.ContainsKey(settlement) && _starvationPenalties.ContainsKey(settlement))
+                if (settlement.IsUnderSiege)
                 {
                     MobileParty attacker = settlement.SiegeEvent.BesiegerCamp.LeaderParty;
                     SurrenderEvent surrenderEvent = SurrenderEvent.PlayerSurrenderEvent;
                     ValueTuple<int, int> townFoodAndMarketStocks = TownHelpers.GetTownFoodAndMarketStocks(settlement.Town);
                     float totalFood = townFoodAndMarketStocks.Item1 + townFoodAndMarketStocks.Item2, foodChange = settlement.Town.FoodChangeWithoutMarketStocks;
                     int daysUntilNoFood = MathF.Ceiling(MathF.Abs(totalFood / foodChange));
+
+                    if (SettlementHelper.IsGarrisonStarving(settlement))
+                    {
+                        // If a settlement has no food, increase its starvation penalty.
+                        _starvationPenalties[settlement] += 4;
+                    }
 
                     if (attacker.IsMainParty)
                     {
@@ -156,15 +143,15 @@ namespace SurrenderTweaks.Behaviors
                         if (!InformationManager.IsAnyInquiryActive())
                         {
                             // If the settlement is willing to offer a bribe or surrender to the player, make them request a parley with the player.
-                            if (surrenderEvent.IsBribeFeasible && !surrenderEvent.IsSurrenderFeasible && _bribeCounts[settlement] == 0)
+                            if (surrenderEvent.IsBribeFeasible && !surrenderEvent.IsSurrenderFeasible && _parleyCounts[settlement] < 1)
                             {
                                 RequestParley();
-                                _bribeCounts[settlement]++;
+                                _parleyCounts[settlement] = 1;
                             }
-                            else if (surrenderEvent.IsSurrenderFeasible && _surrenderCounts[settlement] == 0)
+                            else if (surrenderEvent.IsSurrenderFeasible && _parleyCounts[settlement] < 2)
                             {
                                 RequestParley();
-                                _surrenderCounts[settlement]++;
+                                _parleyCounts[settlement] = 2;
                             }
                         }
                     }
@@ -201,21 +188,12 @@ namespace SurrenderTweaks.Behaviors
                         settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
                     }
                 }
-            }
-        }
-
-        private void OnHourlyTickSettlement(Settlement settlement)
-        {
-            if (settlement.SiegeEvent != null && _starvationPenalties.ContainsKey(settlement))
-            {
-                if (!SettlementHelper.IsGarrisonStarving(settlement))
-                {
-                    _starvationPenalties[settlement] = 0;
-                }
                 else
                 {
-                    // If a settlement has no food, increase its starvation penalty.
-                    _starvationPenalties[settlement] += 4;
+                    if (!SettlementHelper.IsGarrisonStarving(settlement) && _starvationPenalties[settlement] > 0)
+                    {
+                        _starvationPenalties[settlement] -= 4;
+                    }
                 }
             }
         }
@@ -247,7 +225,7 @@ namespace SurrenderTweaks.Behaviors
             GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement), false);
 
             // Add a bribe cooldown to the settlement.
-            _bribeCooldowns.Add(PlayerSiege.BesiegedSettlement, CampaignTime.Now);
+            _bribeTimes.Add(PlayerSiege.BesiegedSettlement, CampaignTime.Now);
 
             // Break the siege.
             AccessTools.Method(typeof(SiegeEventCampaignBehavior), "LeaveSiege").Invoke(null, null);
