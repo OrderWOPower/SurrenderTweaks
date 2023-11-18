@@ -133,7 +133,7 @@ namespace SurrenderTweaks.Behaviors
                     if (SettlementHelper.IsGarrisonStarving(settlement))
                     {
                         // If a settlement has no food, increase its starvation penalty.
-                        _starvationPenalties[settlement] += 4;
+                        _starvationPenalties[settlement]++;
                     }
 
                     if (attacker.IsMainParty)
@@ -192,7 +192,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     if (!SettlementHelper.IsGarrisonStarving(settlement) && _starvationPenalties[settlement] > 0)
                     {
-                        _starvationPenalties[settlement] -= 4;
+                        _starvationPenalties[settlement]--;
                     }
                 }
             }

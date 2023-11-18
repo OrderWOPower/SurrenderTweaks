@@ -1,14 +1,15 @@
 ﻿using HarmonyLib;
 using Helpers;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Siege;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -76,23 +77,15 @@ namespace SurrenderTweaks
 
         public static bool DoesSurrenderIsLogicalForSettlement(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, float acceptablePowerRatio = 0.1f)
         {
-            if (defender.CurrentSettlement != null && attacker.BesiegerCamp != null)
+            Settlement defenderSettlement = defender.CurrentSettlement;
+            BesiegerCamp attackerCamp = attacker.BesiegerCamp;
+
+            if (defenderSettlement != null && attackerCamp != null)
             {
-                float num = defender.Party.TotalStrength, num2 = attacker.Party.TotalStrength, num3;
-                SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
-
-                foreach (PartyBase party in defender.CurrentSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(p => p != defender.Party))
-                {
-                    num += party.TotalStrength;
-                }
-
-                foreach (PartyBase party in attacker.BesiegerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(p => p != attacker.Party))
-                {
-                    num2 += party.TotalStrength;
-                }
-
                 // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
-                num3 = (num2 * acceptablePowerRatio) - (daysUntilNoFood * 96 * settings.NutritionBonusMultiplier) + (starvationPenalty * settings.StarvationPenaltyMultiplier);
+                float num = defender.Party.TotalStrength + defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party != defender.Party).Sum(party => party.TotalStrength) + (defenderSettlement.SiegeEngines.DeployedSiegeEngines.Count * 24) + (defenderSettlement.SettlementTotalWallHitPoints / 100);
+                float num2 = attacker.Party.TotalStrength + attackerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party != attacker.Party).Sum(party => party.TotalStrength) + (attackerCamp.SiegeEngines.DeployedSiegeEngines.Count * 24);
+                float num3 = (num2 * acceptablePowerRatio) - (daysUntilNoFood * 96 * SurrenderTweaksSettings.Instance.NutritionBonusMultiplier) + (starvationPenalty * SurrenderTweaksSettings.Instance.StarvationPenaltyMultiplier);
 
                 return num < num3;
             }
@@ -112,14 +105,8 @@ namespace SurrenderTweaks
                 {
                     if (conversationParty.LeaderHero != null)
                     {
-                        num += (int)(2f * valuationModel.GetMilitaryValueOfParty(conversationParty));
-
-                        foreach (TroopRosterElement troopRosterElement in conversationParty.MemberRoster.GetTroopRoster().Where(e => e.Character.IsHero))
-                        {
-                            num += (int)(0.2f * valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
-                        }
-
                         // For lord parties, calculate the bribe amount based on the total barter value of the lords and the troops in the party.
+                        num = (int)(valuationModel.GetMilitaryValueOfParty(conversationParty) * 2f) + conversationParty.MemberRoster.GetTroopRoster().Where(troopRosterElement => troopRosterElement.Character.IsHero).Sum(troopRosterElement => (int)(valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject) * 0.2f));
                         num2 = MathF.Min((int)(num * settings.BribeAmountMultiplier), conversationParty.LeaderHero.Gold);
                     }
                 }
@@ -127,18 +114,10 @@ namespace SurrenderTweaks
                 {
                     if (defenderSettlement != null)
                     {
-                        foreach (PartyBase defenderParty in defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(p => p.MobileParty != null))
-                        {
-                            num += (int)(2f * valuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty));
+                        IEnumerable<PartyBase> defenderParties = defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(defenderParty => defenderParty.MobileParty != null);
 
-                            foreach (TroopRosterElement troopRosterElement in defenderParty.MemberRoster.GetTroopRoster().Where(e => e.Character.IsHero))
-                            {
-                                num += (int)(0.2f * valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject));
-                            }
-                        }
-
-                        num += (int)defenderSettlement.Town.Prosperity * 6;
                         // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the prosperity of the settlement.
+                        num = defenderParties.Sum(defenderParty => (int)(valuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty) * 2f)) + defenderParties.SelectMany(defenderParty => defenderParty.MemberRoster.GetTroopRoster().Where(troopRosterElement => troopRosterElement.Character.IsHero)).Sum(troopRosterElement => (int)(valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject) * 0.2f)) + ((int)defenderSettlement.Town.Prosperity * 6);
                         num2 = MathF.Min((int)(num * settings.BribeAmountMultiplier), defenderSettlement.Town.Gold);
                     }
                 }
@@ -149,16 +128,16 @@ namespace SurrenderTweaks
 
         public static void AddPrisonersAsCasualties(MobileParty attacker, MobileParty defender)
         {
-            Type warExhaustionManager = AccessTools.TypeByName("WarExhaustionManager");
-            object instance = AccessTools.Property(warExhaustionManager, "Instance")?.GetValue(null);
+            IFaction attackerFaction = attacker.MapFaction, defenderFaction = defender.MapFaction;
             int prisonerCount = defender.MemberRoster.TotalManCount;
+            object instance = AccessTools.Property(AccessTools.TypeByName("WarExhaustionManager"), "Instance")?.GetValue(null);
 
-            attacker.MapFaction.GetStanceWith(defender.MapFaction).Casualties1 += prisonerCount;
+            attackerFaction.GetStanceWith(defenderFaction).Casualties1 += prisonerCount;
 
             // Check whether Diplomacy is loaded.
-            if (instance != null && attacker.MapFaction.IsKingdomFaction && defender.MapFaction.IsKingdomFaction)
+            if (instance != null && attackerFaction.IsKingdomFaction && defenderFaction.IsKingdomFaction)
             {
-                AccessTools.Method(warExhaustionManager, "AddCasualtyWarExhaustion", new Type[] { typeof(Kingdom), typeof(Kingdom), typeof(int), typeof(int), typeof(TextObject), typeof(TextObject) }).Invoke(instance, new object[] { (Kingdom)attacker.MapFaction, (Kingdom)defender.MapFaction, 0, prisonerCount, attacker.Name, defender.Name });
+                AccessTools.Method(AccessTools.TypeByName("WarExhaustionManager"), "AddCasualtyWarExhaustion", new Type[] { typeof(Kingdom), typeof(Kingdom), typeof(int), typeof(int), typeof(TextObject), typeof(TextObject) }).Invoke(instance, new object[] { (Kingdom)attackerFaction, (Kingdom)defenderFaction, 0, prisonerCount, attacker.Name, defender.Name });
             }
         }
     }
