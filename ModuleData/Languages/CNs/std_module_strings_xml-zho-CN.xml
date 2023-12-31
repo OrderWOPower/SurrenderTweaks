@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="简体中文" />
+  </tags>
+  <strings>
+    <string id="SurrenderTweaks01" text="投降机会：高" />
+    <string id="SurrenderTweaks02" text="投降机会：很高" />
+    <string id="SurrenderTweaks03" text="你在{LORD_BRIBE_COOLDOWN}天内不能攻击这个部队。" />
+    <string id="SurrenderTweaks04" text="我能为我的安全通道付钱给你。这里是{MONEY}{GOLD_ICON}。拿了就放我和我的士兵走。[if:idle_angry][ib:nervous]" />
+    <string id="SurrenderTweaks05" text="那是一个合理的选择。你能走。" />
+    <string id="SurrenderTweaks06" text="你们任何都不能走到哪。我要俘虏。" />
+    <string id="SurrenderTweaks07" text="我打不过你。我认输。我任你处置。[if:idle_angry][ib:nervous]" />
+    <string id="SurrenderTweaks08" text="我宁愿战斗也不肯被俘虏。[if:idle_angry][ib:warrior]" />
+    <string id="SurrenderTweaks09" text="你在{SETTLEMENT_BRIBE_COOLDOWN}天内不能攻击这个定居点。" />
+    <string id="SurrenderTweaks10" text="我们的食物不足。你没必要饿死我们。我们能付钱让你结束围攻。这里是{MONEY}{GOLD_ICON}。拿了就饶了我们。" />
+    <string id="SurrenderTweaks11" text="我现在就饶了你。你逃脱了厄运，但时间不久。" />
+    <string id="SurrenderTweaks12" text="开玩笑！当这个定居点陷落你就不会饿了...如果你先不死。" />
+    <string id="SurrenderTweaks13" text="我们的食物完了。我们不要继续饿死。我们认输。" />
+    <string id="SurrenderTweaks14" text="守军要求谈判" />
+    <string id="SurrenderTweaks15" text="守军吹喇叭，打开大门。一个信使骑向你的营地要求谈判。" />
+    <string id="SurrenderTweaks16" text="好" />
+    <string id="SurrenderTweaks17" text="乘数" />
+    <string id="SurrenderTweaks18" text="贿赂机会" />
+    <string id="SurrenderTweaks19" text="贿赂机会的乘数。默认为1.0。" />
+    <string id="SurrenderTweaks20" text="投降机会" />
+    <string id="SurrenderTweaks21" text="投降机会的乘数。默认为1.0。" />
+    <string id="SurrenderTweaks22" text="定居点营养加成" />
+    <string id="SurrenderTweaks23" text="定居点营养加成的乘数。默认为1.0。" />
+    <string id="SurrenderTweaks24" text="定居点饥饿惩罚" />
+    <string id="SurrenderTweaks25" text="定居点饥饿惩罚的乘数。默认为1.0。" />
+    <string id="SurrenderTweaks26" text="贿赂金额" />
+    <string id="SurrenderTweaks27" text="贿赂金额的乘数。默认为1.0。" />
+    <string id="SurrenderTweaks28" text="贿赂冷却" />
+    <string id="SurrenderTweaks29" text="领主贿赂冷却" />
+    <string id="SurrenderTweaks30" text="领主贿赂的冷却天数。默认为10。" />
+    <string id="SurrenderTweaks31" text="定居点贿赂冷却" />
+    <string id="SurrenderTweaks32" text="定居点贿赂的冷却天数。默认为10。" />
+  </strings>
+</base>
