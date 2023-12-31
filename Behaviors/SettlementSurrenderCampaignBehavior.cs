@@ -27,6 +27,7 @@ namespace SurrenderTweaks.Behaviors
         private static Dictionary<Settlement, CampaignTime> _bribeTimes;
 
         private Dictionary<Settlement, int> _starvationPenalties, _parleyCounts;
+        private List<Settlement> _besiegedSettlements;
 
         private static void Postfix(MenuCallbackArgs args)
         {
@@ -51,11 +52,13 @@ namespace SurrenderTweaks.Behaviors
             _bribeTimes = new Dictionary<Settlement, CampaignTime>();
             _starvationPenalties = new Dictionary<Settlement, int>();
             _parleyCounts = new Dictionary<Settlement, int>();
+            _besiegedSettlements = new List<Settlement>();
         }
 
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
+            CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnGameLoaded));
             CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeStarted));
             CampaignEvents.SiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(OnSiegeCompleted));
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
@@ -81,6 +84,8 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
 
+        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => _besiegedSettlements = _starvationPenalties.Keys.ToList();
+
         private void OnSiegeStarted(SiegeEvent siegeEvent)
         {
             Settlement settlement = siegeEvent.BesiegedSettlement;
@@ -90,6 +95,7 @@ namespace SurrenderTweaks.Behaviors
                 // Add a starvation penalty to the besieged settlement.
                 _starvationPenalties.Add(settlement, 0);
                 _parleyCounts.Add(settlement, 0);
+                _besiegedSettlements.Add(settlement);
             }
         }
 
@@ -100,6 +106,7 @@ namespace SurrenderTweaks.Behaviors
                 _bribeTimes.Remove(settlement);
                 _starvationPenalties.Remove(settlement);
                 _parleyCounts.Remove(settlement);
+                _besiegedSettlements.Remove(settlement);
             }
         }
 
@@ -115,12 +122,13 @@ namespace SurrenderTweaks.Behaviors
                 // If a settlement is no longer under siege, remove its starvation penalty.
                 _starvationPenalties.Remove(keyValuePair.Key);
                 _parleyCounts.Remove(keyValuePair.Key);
+                _besiegedSettlements.Remove(keyValuePair.Key);
             }
         }
 
         private void OnHourlyTick()
         {
-            foreach (Settlement settlement in _starvationPenalties.Keys.ToList())
+            foreach (Settlement settlement in _besiegedSettlements)
             {
                 if (settlement.IsUnderSiege)
                 {
