@@ -21,7 +21,6 @@ using TaleWorlds.Localization;
 
 namespace SurrenderTweaks.Behaviors
 {
-    [HarmonyPatch(typeof(EncounterGameMenuBehavior), "game_menu_town_town_besiege_on_condition")]
     public class SettlementSurrenderCampaignBehavior : CampaignBehaviorBase
     {
         private static Dictionary<Settlement, CampaignTime> _bribeTimes;
