@@ -14,6 +14,7 @@ namespace SurrenderTweaks
     public class SurrenderTweaksSubModule : MBSubModuleBase
     {
         private Harmony _harmony;
+
         protected override void OnSubModuleLoad()
         {
             UIExtender uiExtender = new UIExtender("SurrenderTweaks");
