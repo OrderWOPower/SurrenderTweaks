@@ -19,7 +19,7 @@ namespace SurrenderTweaks
     {
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
-            if (defender != null && attacker != null && defender.Army == null && defender.DefaultBehavior != AiBehavior.EngageParty && defender.ShortTermBehavior != AiBehavior.EngageParty && daysUntilNoFood >= 0)
+            if (defender != null && attacker != null && defender.Army == null && !defender.IsEngaging && daysUntilNoFood >= 0)
             {
                 float num = 0f, num2 = 0f;
                 int num3;

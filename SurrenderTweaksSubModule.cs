@@ -17,7 +17,7 @@ namespace SurrenderTweaks
 
         protected override void OnSubModuleLoad()
         {
-            UIExtender uiExtender = new UIExtender("SurrenderTweaks");
+            UIExtender uiExtender = UIExtender.Create("SurrenderTweaks");
 
             uiExtender.Register(typeof(SurrenderTweaksSubModule).Assembly);
             uiExtender.Enable();
