@@ -145,7 +145,7 @@ namespace SurrenderTweaks.Behaviors
 
                     if (attacker.IsMainParty)
                     {
-                        surrenderEvent.SetBribeOrSurrender(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalties[settlement]);
+                        surrenderEvent.SetBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalties[settlement]);
 
                         if (!InformationManager.IsAnyInquiryActive())
                         {

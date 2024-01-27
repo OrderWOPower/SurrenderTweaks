@@ -44,7 +44,7 @@ namespace SurrenderTweaks.Behaviors
             }
         }
 
-        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderEvent.PlayerSurrenderEvent.SetBribeOrSurrender(_isBribeFeasible, _isSurrenderFeasible);
+        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => SurrenderEvent.PlayerSurrenderEvent.SetBribeOrSurrenderFeasible(_isBribeFeasible, _isSurrenderFeasible);
 
         private void OnMapEventStarted(MapEvent mapEvent, PartyBase attackerParty, PartyBase defenderParty)
         {
@@ -85,7 +85,7 @@ namespace SurrenderTweaks.Behaviors
 
             if (MobileParty.ConversationParty != null && !MobileParty.ConversationParty.IsMilitia)
             {
-                surrenderEvent.SetBribeOrSurrender(MobileParty.ConversationParty, MobileParty.MainParty);
+                surrenderEvent.SetBribeOrSurrenderFeasible(MobileParty.ConversationParty, MobileParty.MainParty);
             }
 
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
@@ -98,7 +98,7 @@ namespace SurrenderTweaks.Behaviors
 
             if (MapEvent.PlayerMapEvent == null && PlayerSiege.PlayerSiegeEvent == null)
             {
-                surrenderEvent.SetBribeOrSurrender(null, null);
+                surrenderEvent.SetBribeOrSurrenderFeasible(null, null);
             }
 
             _isBribeFeasible = surrenderEvent.IsBribeFeasible;
