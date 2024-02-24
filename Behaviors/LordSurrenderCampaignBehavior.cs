@@ -114,7 +114,6 @@ namespace SurrenderTweaks.Behaviors
         {
             PartyBase defender = PlayerEncounter.EncounteredParty;
             Dictionary<PartyBase, ItemRoster> dictionary = new Dictionary<PartyBase, ItemRoster>();
-            // Capture the trade items.
             ItemRoster value = new ItemRoster(defender.ItemRoster);
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 
@@ -136,6 +135,7 @@ namespace SurrenderTweaks.Behaviors
             }
 
             DestroyPartyAction.Apply(PartyBase.MainParty, defender.MobileParty);
+            // Capture the trade items.
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);
             PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, defender.Name, troopRoster.TotalManCount, null);

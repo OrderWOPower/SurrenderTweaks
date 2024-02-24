@@ -199,6 +199,7 @@ namespace SurrenderTweaks.Behaviors
                 {
                     if (!SettlementHelper.IsGarrisonStarving(settlement) && _starvationPenalties[settlement] > 0)
                     {
+                        // If a settlement has food, decrease its starvation penalty.
                         _starvationPenalties[settlement]--;
                     }
                 }
@@ -249,7 +250,6 @@ namespace SurrenderTweaks.Behaviors
             {
                 if (defender != settlement.Party)
                 {
-                    // Capture the trade items which do not belong to the settlement.
                     value.Add(defender.ItemRoster);
                     defender.ItemRoster.Clear();
                     SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
@@ -275,6 +275,7 @@ namespace SurrenderTweaks.Behaviors
                 }
             }
 
+            // Capture the trade items which do not belong to the settlement.
             dictionary.Add(PartyBase.MainParty, value);
             InventoryManager.OpenScreenAsLoot(dictionary);
             PartyScreenManager.OpenScreenAsLoot(TroopRoster.CreateDummyTroopRoster(), troopRoster, settlement.Party.Name, troopRoster.TotalManCount, null);

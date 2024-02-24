@@ -19,7 +19,7 @@ namespace SurrenderTweaks
     {
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
-            if (defender != null && attacker != null && defender.Army == null && !defender.IsEngaging && daysUntilNoFood >= 0)
+            if (defender != null && attacker != null && (defender.Army == null || defender.Army.LeaderParty == defender) && !defender.IsEngaging && daysUntilNoFood >= 0)
             {
                 float num = 0f, num2 = 0f;
                 int num3;
@@ -83,8 +83,8 @@ namespace SurrenderTweaks
             if (defenderSettlement != null && attackerCamp != null)
             {
                 // Compare the defenders' and attackers' relative strengths. Give the defenders a bonus for every day of food that they have. Give the defenders a penalty if they have no food.
-                float num = defender.Party.TotalStrength + defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party != defender.Party).Sum(party => party.TotalStrength) + (defenderSettlement.SiegeEngines.DeployedSiegeEngines.Count * 24) + (defenderSettlement.SettlementTotalWallHitPoints / 100);
-                float num2 = attacker.Party.TotalStrength + attackerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party != attacker.Party).Sum(party => party.TotalStrength) + (attackerCamp.SiegeEngines.DeployedSiegeEngines.Count * 24);
+                float num = defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Sum(party => party.TotalStrength) + (defenderSettlement.SiegeEngines.DeployedSiegeEngines.Count * 24) + (defenderSettlement.SettlementTotalWallHitPoints / 100);
+                float num2 = attackerCamp.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Sum(party => party.TotalStrength) + (attackerCamp.SiegeEngines.DeployedSiegeEngines.Count * 24);
                 float num3 = (num2 * acceptablePowerRatio) - (daysUntilNoFood * 96 * SurrenderTweaksSettings.Instance.NutritionBonusMultiplier) + (starvationPenalty * SurrenderTweaksSettings.Instance.StarvationPenaltyMultiplier);
 
                 return num < num3;
