@@ -26,7 +26,6 @@ namespace SurrenderTweaks.Behaviors
         private static Dictionary<Settlement, CampaignTime> _bribeTimes;
 
         private Dictionary<Settlement, int> _starvationPenalties, _parleyCounts;
-        private List<Settlement> _besiegedSettlements;
 
         private static void Postfix(MenuCallbackArgs args)
         {
@@ -51,17 +50,15 @@ namespace SurrenderTweaks.Behaviors
             _bribeTimes = new Dictionary<Settlement, CampaignTime>();
             _starvationPenalties = new Dictionary<Settlement, int>();
             _parleyCounts = new Dictionary<Settlement, int>();
-            _besiegedSettlements = new List<Settlement>();
         }
 
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
-            CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnGameLoaded));
             CampaignEvents.OnSiegeEventStartedEvent.AddNonSerializedListener(this, new Action<SiegeEvent>(OnSiegeStarted));
             CampaignEvents.SiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(OnSiegeCompleted));
-            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
-            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, new Action(OnHourlyTick));
+            CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(this, new Action<Settlement>(OnDailyTickSettlement));
+            CampaignEvents.HourlyTickSettlementEvent.AddNonSerializedListener(this, new Action<Settlement>(OnHourlyTickSettlement));
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -83,8 +80,6 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
 
-        private void OnGameLoaded(CampaignGameStarter campaignGameStarter) => _besiegedSettlements = _starvationPenalties.Keys.ToList();
-
         private void OnSiegeStarted(SiegeEvent siegeEvent)
         {
             Settlement settlement = siegeEvent.BesiegedSettlement;
@@ -94,7 +89,6 @@ namespace SurrenderTweaks.Behaviors
                 // Add a starvation penalty to the besieged settlement.
                 _starvationPenalties.Add(settlement, 0);
                 _parleyCounts.Add(settlement, 0);
-                _besiegedSettlements.Add(settlement);
             }
         }
 
@@ -105,29 +99,27 @@ namespace SurrenderTweaks.Behaviors
                 _bribeTimes.Remove(settlement);
                 _starvationPenalties.Remove(settlement);
                 _parleyCounts.Remove(settlement);
-                _besiegedSettlements.Remove(settlement);
             }
         }
 
-        private void OnDailyTick()
+        private void OnDailyTickSettlement(Settlement settlement)
         {
-            foreach (KeyValuePair<Settlement, CampaignTime> keyValuePair in _bribeTimes.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays))
+            if (_bribeTimes.TryGetValue(settlement, out CampaignTime time) && (CampaignTime.Now - time).ToDays >= SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays)
             {
-                _bribeTimes.Remove(keyValuePair.Key);
+                _bribeTimes.Remove(settlement);
             }
 
-            foreach (KeyValuePair<Settlement, int> keyValuePair in _starvationPenalties.ToList().Where(p => !p.Key.IsUnderSiege && p.Value <= 0))
+            if (_starvationPenalties.TryGetValue(settlement, out int starvationPenalty) && !settlement.IsUnderSiege && starvationPenalty <= 0)
             {
                 // If a settlement is no longer under siege, remove its starvation penalty.
-                _starvationPenalties.Remove(keyValuePair.Key);
-                _parleyCounts.Remove(keyValuePair.Key);
-                _besiegedSettlements.Remove(keyValuePair.Key);
+                _starvationPenalties.Remove(settlement);
+                _parleyCounts.Remove(settlement);
             }
         }
 
-        private void OnHourlyTick()
+        private void OnHourlyTickSettlement(Settlement settlement)
         {
-            foreach (Settlement settlement in _besiegedSettlements)
+            if (_starvationPenalties.TryGetValue(settlement, out _))
             {
                 if (settlement.IsUnderSiege)
                 {
@@ -192,7 +184,7 @@ namespace SurrenderTweaks.Behaviors
                         }
 
                         // Capture the settlement.
-                        settlement.SiegeEvent.BesiegerCamp.SiegeEngines.SiegePreparations.SetProgress(1f);
+                        StartBattleAction.ApplyStartAssaultAgainstWalls(attacker, settlement);
                     }
                 }
                 else

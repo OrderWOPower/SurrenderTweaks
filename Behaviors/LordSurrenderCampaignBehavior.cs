@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -45,7 +44,7 @@ namespace SurrenderTweaks.Behaviors
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
-            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, new Action(OnDailyTick));
+            CampaignEvents.DailyTickPartyEvent.AddNonSerializedListener(this, new Action<MobileParty>(OnDailyTickParty));
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -65,11 +64,11 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnSessionLaunched(CampaignGameStarter campaignGameStarter) => AddDialogs(campaignGameStarter);
 
-        private void OnDailyTick()
+        private void OnDailyTickParty(MobileParty party)
         {
-            foreach (KeyValuePair<MobileParty, CampaignTime> keyValuePair in _bribeTimes.ToList().Where(p => (CampaignTime.Now - p.Value).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays))
+            if (_bribeTimes.TryGetValue(party, out CampaignTime time) && (CampaignTime.Now - time).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays)
             {
-                _bribeTimes.Remove(keyValuePair.Key);
+                _bribeTimes.Remove(party);
             }
         }
 
