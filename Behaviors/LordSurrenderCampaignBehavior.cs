@@ -66,7 +66,7 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnDailyTickParty(MobileParty party)
         {
-            if (_bribeTimes.TryGetValue(party, out CampaignTime time) && (CampaignTime.Now - time).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays)
+            if (_bribeTimes.TryGetValue(party, out CampaignTime bribeTime) && (CampaignTime.Now - bribeTime).ToDays >= SurrenderTweaksSettings.Instance.LordBribeCooldownDays)
             {
                 _bribeTimes.Remove(party);
             }

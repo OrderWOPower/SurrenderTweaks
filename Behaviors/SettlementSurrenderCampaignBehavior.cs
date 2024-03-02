@@ -104,7 +104,7 @@ namespace SurrenderTweaks.Behaviors
 
         private void OnDailyTickSettlement(Settlement settlement)
         {
-            if (_bribeTimes.TryGetValue(settlement, out CampaignTime time) && (CampaignTime.Now - time).ToDays >= SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays)
+            if (_bribeTimes.TryGetValue(settlement, out CampaignTime bribeTime) && (CampaignTime.Now - bribeTime).ToDays >= SurrenderTweaksSettings.Instance.SettlementBribeCooldownDays)
             {
                 _bribeTimes.Remove(settlement);
             }
