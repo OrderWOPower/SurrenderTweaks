@@ -19,57 +19,65 @@ namespace SurrenderTweaks
     {
         public static bool IsBribeOrSurrenderFeasible(MobileParty defender, MobileParty attacker, int daysUntilNoFood, int starvationPenalty, bool shouldSurrender)
         {
-            if (defender != null && attacker != null && (defender.Army == null || defender.Army.LeaderParty == defender) && !defender.IsEngaging && daysUntilNoFood >= 0)
+            if (defender != null && attacker != null && !defender.IsEngaging && daysUntilNoFood >= 0)
             {
-                float num = 0f, num2 = 0f;
-                int num3;
                 SurrenderTweaksSettings settings = SurrenderTweaksSettings.Instance;
 
-                // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
-                if (defender.IsBandit)
+                if (defender.Army != null)
                 {
-                    num = !shouldSurrender ? 0.06f : 0.04f;
-                    num2 = !shouldSurrender ? 0.09f : 0.06f;
+                    return defender.Army.LeaderParty == defender && attacker.GetTotalStrengthWithFollowers(false) * settings.SurrenderChanceMultiplier > defender.Army.TotalStrength * 10f && shouldSurrender;
                 }
-                else if (defender.IsCaravan || defender.IsLordParty || defender.IsMilitia)
+                else
                 {
-                    Hero defenderLeader = defender.LeaderHero, attackerLeader = attacker.LeaderHero;
-                    int relation = 0, defenderTraitLevels = 0, attackerTraitLevels = 0;
+                    float num = 0f, num2 = 0f;
+                    int num3;
 
-                    if (defenderLeader != null && attackerLeader != null)
+                    // Calculate the chance of bribe or surrender for bandit parties, caravan parties, lord parties, militia parties and villager parties.
+                    if (defender.IsBandit)
                     {
-                        relation = CharacterRelationManager.GetHeroRelation(defenderLeader, attackerLeader);
-                        defenderTraitLevels = defenderLeader.GetTraitLevel(DefaultTraits.Mercy) + defenderLeader.GetTraitLevel(DefaultTraits.Valor) + defenderLeader.GetTraitLevel(DefaultTraits.Honor) + defenderLeader.GetTraitLevel(DefaultTraits.Generosity) + defenderLeader.GetTraitLevel(DefaultTraits.Calculating);
-                        attackerTraitLevels = attackerLeader.GetTraitLevel(DefaultTraits.Mercy) + attackerLeader.GetTraitLevel(DefaultTraits.Valor) + attackerLeader.GetTraitLevel(DefaultTraits.Honor) + attackerLeader.GetTraitLevel(DefaultTraits.Generosity) + attackerLeader.GetTraitLevel(DefaultTraits.Calculating);
+                        num = !shouldSurrender ? 0.06f : 0.04f;
+                        num2 = !shouldSurrender ? 0.09f : 0.06f;
+                    }
+                    else if (defender.IsCaravan || defender.IsLordParty || defender.IsMilitia)
+                    {
+                        Hero defenderLeader = defender.LeaderHero, attackerLeader = attacker.LeaderHero;
+                        int relation = 0, defenderTraitLevels = 0, attackerTraitLevels = 0;
+
+                        if (defenderLeader != null && attackerLeader != null)
+                        {
+                            relation = CharacterRelationManager.GetHeroRelation(defenderLeader, attackerLeader);
+                            defenderTraitLevels = defenderLeader.GetTraitLevel(DefaultTraits.Mercy) + defenderLeader.GetTraitLevel(DefaultTraits.Valor) + defenderLeader.GetTraitLevel(DefaultTraits.Honor) + defenderLeader.GetTraitLevel(DefaultTraits.Generosity) + defenderLeader.GetTraitLevel(DefaultTraits.Calculating);
+                            attackerTraitLevels = attackerLeader.GetTraitLevel(DefaultTraits.Mercy) + attackerLeader.GetTraitLevel(DefaultTraits.Valor) + attackerLeader.GetTraitLevel(DefaultTraits.Honor) + attackerLeader.GetTraitLevel(DefaultTraits.Generosity) + attackerLeader.GetTraitLevel(DefaultTraits.Calculating);
+                        }
+
+                        if (!shouldSurrender || relation > 25 || defenderTraitLevels + attackerTraitLevels > 0)
+                        {
+                            num = 0.4f;
+                            num2 = 0.6f;
+                        }
+                        else if (shouldSurrender || relation < -25 || defenderTraitLevels + attackerTraitLevels < 0)
+                        {
+                            num = 0.1f;
+                            num2 = 0.15f;
+                        }
+                    }
+                    else if (defender.IsVillager)
+                    {
+                        num = !shouldSurrender ? 0.2f : 0.05f;
+                        num2 = !shouldSurrender ? 0.4f : 0.1f;
                     }
 
-                    if (!shouldSurrender || relation > 25 || defenderTraitLevels + attackerTraitLevels > 0)
+                    num *= !shouldSurrender ? settings.BribeChanceMultiplier : settings.SurrenderChanceMultiplier;
+                    num2 *= !shouldSurrender ? settings.BribeChanceMultiplier : settings.SurrenderChanceMultiplier;
+                    num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num)) ? 33 : 67;
+
+                    if (attacker.IsMainParty && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
                     {
-                        num = 0.4f;
-                        num2 = 0.6f;
+                        num3 = MathF.Round(num3 * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus));
                     }
-                    else if (shouldSurrender || relation < -25 || defenderTraitLevels + attackerTraitLevels < 0)
-                    {
-                        num = 0.1f;
-                        num2 = 0.15f;
-                    }
-                }
-                else if (defender.IsVillager)
-                {
-                    num = !shouldSurrender ? 0.2f : 0.05f;
-                    num2 = !shouldSurrender ? 0.4f : 0.1f;
-                }
 
-                num *= !shouldSurrender ? settings.BribeChanceMultiplier : settings.SurrenderChanceMultiplier;
-                num2 *= !shouldSurrender ? settings.BribeChanceMultiplier : settings.SurrenderChanceMultiplier;
-                num3 = (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num)) ? 33 : 67;
-
-                if (attacker.IsMainParty && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.Scarface))
-                {
-                    num3 = MathF.Round(num3 * (1f + DefaultPerks.Roguery.Scarface.PrimaryBonus));
+                    return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num2));
                 }
-
-                return 50 <= 100 - num3 && (!defender.IsMilitia ? PartyBaseHelper.DoesSurrenderIsLogicalForParty(defender, attacker, num2) : DoesSurrenderIsLogicalForSettlement(defender, attacker, daysUntilNoFood, starvationPenalty, num2));
             }
 
             return false;

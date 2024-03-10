@@ -34,11 +34,11 @@ namespace SurrenderTweaks
         [SettingPropertyGroup("{=SurrenderTweaks17}Multipliers", GroupOrder = 0)]
         public float BribeAmountMultiplier { get; set; } = 1.0f;
 
-        [SettingPropertyInteger("{=SurrenderTweaks29}Lord Bribe Cooldown", 1, 10, "0", Order = 0, RequireRestart = false, HintText = "{=SurrenderTweaks30}Number of days cooldown for lord bribes. Default is 10.")]
+        [SettingPropertyInteger("{=SurrenderTweaks29}Lord Bribe Cooldown", 0, 10, "0", Order = 0, RequireRestart = false, HintText = "{=SurrenderTweaks30}Number of days cooldown for lord bribes. Default is 10.")]
         [SettingPropertyGroup("{=SurrenderTweaks28}Bribe Cooldowns", GroupOrder = 1)]
         public int LordBribeCooldownDays { get; set; } = 10;
 
-        [SettingPropertyInteger("{=SurrenderTweaks31}Settlement Bribe Cooldown", 1, 10, "0", Order = 1, RequireRestart = false, HintText = "{=SurrenderTweaks32}Number of days cooldown for settlement bribes. Default is 10.")]
+        [SettingPropertyInteger("{=SurrenderTweaks31}Settlement Bribe Cooldown", 0, 10, "0", Order = 1, RequireRestart = false, HintText = "{=SurrenderTweaks32}Number of days cooldown for settlement bribes. Default is 10.")]
         [SettingPropertyGroup("{=SurrenderTweaks28}Bribe Cooldowns", GroupOrder = 1)]
         public int SettlementBribeCooldownDays { get; set; } = 10;
     }
