@@ -25,7 +25,7 @@ namespace SurrenderTweaks
 
                 if (defender.Army != null)
                 {
-                    return defender.Army.LeaderParty == defender && attacker.GetTotalStrengthWithFollowers(false) * settings.SurrenderChanceMultiplier > defender.Army.TotalStrength * 10f && shouldSurrender;
+                    return defender.Army.LeaderParty == defender && attacker.GetTotalStrengthWithFollowers(false) * settings.SurrenderChanceMultiplier > defender.Army.TotalStrength * 10f;
                 }
                 else
                 {
