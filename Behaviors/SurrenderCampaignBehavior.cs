@@ -115,7 +115,7 @@ namespace SurrenderTweaks.Behaviors
                 yield return AccessTools.Method(typeof(VillagerCampaignBehavior), "IsBribeFeasible");
             }
 
-            private static void Postfix(MethodBase __originalMethod, ref bool __result) => __result = __originalMethod.DeclaringType == typeof(BanditsCampaignBehavior) && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.PartnersInCrime) || SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible;
+            private static void Postfix(MethodBase __originalMethod, ref bool __result) => __result = SurrenderEvent.PlayerSurrenderEvent.IsBribeFeasible || (__originalMethod.DeclaringType == typeof(BanditsCampaignBehavior) && Hero.MainHero.GetPerkValue(DefaultPerks.Roguery.PartnersInCrime));
         }
 
         [HarmonyPatch]

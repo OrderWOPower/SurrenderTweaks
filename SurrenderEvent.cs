@@ -22,6 +22,11 @@ namespace SurrenderTweaks
         {
             IsBribeFeasible = SurrenderHelper.IsBribeOrSurrenderFeasible(defender, attacker, daysUntilNoFood, starvationPenalty, false);
             IsSurrenderFeasible = SurrenderHelper.IsBribeOrSurrenderFeasible(defender, attacker, daysUntilNoFood, starvationPenalty, true);
+
+            if (IsSurrenderFeasible)
+            {
+                IsBribeFeasible = true;
+            }
         }
     }
 }
