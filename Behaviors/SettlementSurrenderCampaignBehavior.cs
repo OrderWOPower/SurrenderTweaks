@@ -224,8 +224,15 @@ namespace SurrenderTweaks.Behaviors
             // Transfer the bribe amount from the settlement to the player.
             GiveGoldAction.ApplyForSettlementToCharacter(PlayerSiege.BesiegedSettlement, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, PlayerSiege.BesiegedSettlement), false);
 
-            // Add a bribe cooldown to the settlement.
-            _bribeTimes.Add(PlayerSiege.BesiegedSettlement, CampaignTime.Now);
+            if (!_bribeTimes.TryGetValue(PlayerSiege.BesiegedSettlement, out _))
+            {
+                // Add a bribe cooldown to the settlement.
+                _bribeTimes.Add(PlayerSiege.BesiegedSettlement, CampaignTime.Now);
+            }
+            else
+            {
+                _bribeTimes[PlayerSiege.BesiegedSettlement] = CampaignTime.Now;
+            }
 
             // Break the siege.
             AccessTools.Method(typeof(SiegeEventCampaignBehavior), "LeaveSiege").Invoke(null, null);

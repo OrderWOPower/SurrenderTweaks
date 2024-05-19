@@ -107,8 +107,15 @@ namespace SurrenderTweaks.Behaviors
             // Transfer the bribe amount from the lord to the player.
             GiveGoldAction.ApplyBetweenCharacters(MobileParty.ConversationParty.LeaderHero, Hero.MainHero, SurrenderHelper.GetBribeAmount(MobileParty.ConversationParty, null), false);
 
-            // Add a bribe cooldown to the party.
-            _bribeTimes.Add(MobileParty.ConversationParty, CampaignTime.Now);
+            if (!_bribeTimes.TryGetValue(MobileParty.ConversationParty, out _))
+            {
+                // Add a bribe cooldown to the party.
+                _bribeTimes.Add(MobileParty.ConversationParty, CampaignTime.Now);
+            }
+            else
+            {
+                _bribeTimes[MobileParty.ConversationParty] = CampaignTime.Now;
+            }
 
             PlayerEncounter.LeaveEncounter = true;
         }
