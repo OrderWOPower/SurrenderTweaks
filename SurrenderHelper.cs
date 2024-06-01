@@ -122,7 +122,7 @@ namespace SurrenderTweaks
                 {
                     if (defenderSettlement != null)
                     {
-                        IEnumerable<PartyBase> defenderParties = defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(defenderParty => defenderParty.MobileParty != null);
+                        IEnumerable<PartyBase> defenderParties = defenderSettlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party.MobileParty != null);
 
                         // For settlements, calculate the bribe amount based on the total barter value of the lords and the troops in the settlement, as well as the prosperity of the settlement.
                         num = defenderParties.Sum(defenderParty => (int)(valuationModel.GetMilitaryValueOfParty(defenderParty.MobileParty) * 2f)) + defenderParties.SelectMany(defenderParty => defenderParty.MemberRoster.GetTroopRoster().Where(troopRosterElement => troopRosterElement.Character.IsHero)).Sum(troopRosterElement => (int)(valuationModel.GetValueOfHero(troopRosterElement.Character.HeroObject) * 0.2f)) + ((int)defenderSettlement.Town.Prosperity * 6);

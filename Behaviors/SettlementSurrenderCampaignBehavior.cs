@@ -156,15 +156,12 @@ namespace SurrenderTweaks.Behaviors
                     }
                     else if (!settlement.SiegeEvent.IsPlayerSiegeEvent && settlement.Party.MapEvent == null && SurrenderHelper.IsBribeOrSurrenderFeasible(settlement.MilitiaPartyComponent?.MobileParty, attacker, daysUntilNoFood, _starvationPenalties[settlement], true))
                     {
-                        foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
+                        foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party.MobileParty != null).ToList())
                         {
-                            if (defender != settlement.Party)
-                            {
-                                // Capture the trade items which do not belong to the settlement.
-                                attacker.ItemRoster.Add(defender.ItemRoster);
-                                defender.ItemRoster.Clear();
-                                SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
-                            }
+                            // Capture the trade items which do not belong to the settlement.
+                            attacker.ItemRoster.Add(defender.ItemRoster);
+                            defender.ItemRoster.Clear();
+                            SurrenderHelper.AddPrisonersAsCasualties(attacker, defender.MobileParty);
 
                             foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster().ToList())
                             {
@@ -245,14 +242,11 @@ namespace SurrenderTweaks.Behaviors
             ItemRoster value = new ItemRoster();
             TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
 
-            foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).ToList())
+            foreach (PartyBase defender in settlement.GetInvolvedPartiesForEventType(MapEvent.BattleTypes.Siege).Where(party => party.MobileParty != null).ToList())
             {
-                if (defender != settlement.Party)
-                {
-                    value.Add(defender.ItemRoster);
-                    defender.ItemRoster.Clear();
-                    SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
-                }
+                value.Add(defender.ItemRoster);
+                defender.ItemRoster.Clear();
+                SurrenderHelper.AddPrisonersAsCasualties(MobileParty.MainParty, defender.MobileParty);
 
                 foreach (TroopRosterElement troopRosterElement in defender.MemberRoster.GetTroopRoster())
                 {
@@ -268,10 +262,7 @@ namespace SurrenderTweaks.Behaviors
                     }
                 }
 
-                if (defender.MobileParty != null)
-                {
-                    DestroyPartyAction.Apply(PartyBase.MainParty, defender.MobileParty);
-                }
+                DestroyPartyAction.Apply(PartyBase.MainParty, defender.MobileParty);
             }
 
             // Capture the trade items which do not belong to the settlement.
