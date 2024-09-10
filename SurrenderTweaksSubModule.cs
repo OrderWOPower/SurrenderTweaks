@@ -41,7 +41,13 @@ namespace SurrenderTweaks
             }
         }
 
-        public override void OnGameEnd(Game game) => _harmony.Unpatch(AccessTools.Method(typeof(EncounterGameMenuBehavior), "game_menu_town_town_besiege_on_condition"), AccessTools.Method(typeof(SettlementSurrenderCampaignBehavior), "Postfix"));
+        public override void OnGameEnd(Game game)
+        {
+            if (game.GameType is Campaign)
+            {
+                _harmony.Unpatch(AccessTools.Method(typeof(EncounterGameMenuBehavior), "game_menu_town_town_besiege_on_condition"), AccessTools.Method(typeof(SettlementSurrenderCampaignBehavior), "Postfix"));
+            }
+        }
 
         public void OnScreenManagerPushScreen(ScreenBase pushedScreen)
         {
