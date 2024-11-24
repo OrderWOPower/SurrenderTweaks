@@ -3,7 +3,6 @@ using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -69,12 +68,9 @@ namespace SurrenderTweaks.Behaviors
                 dataStore.SyncData("_starvationPenalties", ref _starvationPenalties);
                 dataStore.SyncData("_parleyCounts", ref _parleyCounts);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                if (dataStore.IsLoading)
-                {
-                    InformationManager.DisplayMessage(new InformationMessage(MethodBase.GetCurrentMethod().DeclaringType.FullName + "." + MethodBase.GetCurrentMethod().Name + ": Error loading save file!"));
-                }
+                InformationManager.DisplayMessage(new InformationMessage(ex.ToString()));
             }
         }
 
